@@ -4,14 +4,13 @@ cmake_minimum_required (VERSION 2.6.0)
 
 project(lualib C) 
     
-# lua 5.2 sources
-set(lua_srcs lapi.c     lauxlib.c  lbaselib.c lbitlib.c  lcode.c  
-             lcorolib.c lctype.c   ldblib.c   ldebug.c   ldo.c      
-             ldump.c    lfunc.c    lgc.c      linit.c    liolib.c 
-             llex.c     lmathlib.c lmem.c     loadlib.c  lobject.c
-             lopcodes.c loslib.c   lparser.c  lstate.c   lstring.c 
-             lstrlib.c  ltable.c   ltablib.c  ltm.c      lua.c 
-             lundump.c  lvm.c      lzio.c     #luac.c
+# lua 5.3 sources
+set(lua_srcs  lapi.c      lctype.c  lgc.c       loadlib.c   lstring.c  #luac.c
+              lauxlib.c   ldblib.c  linit.c     lobject.c   lstrlib.c  lundump.c
+              lbaselib.c  ldebug.c  liolib.c    lopcodes.c  ltable.c   lutf8lib.c
+              lbitlib.c   ldo.c     llex.c      loslib.c    ltablib.c  lvm.c
+              lcode.c     ldump.c   lmathlib.c  lparser.c   ltm.c      lzio.c
+              lcorolib.c  lfunc.c   lmem.c      lstate.c    lua.c
     )
 
 add_library(lualib STATIC ${lua_srcs})
