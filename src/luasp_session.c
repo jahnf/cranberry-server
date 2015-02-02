@@ -31,7 +31,7 @@ inline static void lsp_session_data_free( void *data ) {
 int lsp_session_start( lua_State *L ) {
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
-    unsigned ttl = 1800;
+    int ttl = 1800;
     session_t *wsdata;
     const char *sid;
 
@@ -43,7 +43,7 @@ int lsp_session_start( lua_State *L ) {
 
 
     if( n == 1 && lua_isnumber(L,1) ) {
-        ttl = (unsigned)lua_tointeger( L, 1 );
+        ttl = lua_tointeger( L, 1 );
     } else {
         ttl = ((server_settings_t*)es->args->pSettings)->scripting.session_timeout;
     }

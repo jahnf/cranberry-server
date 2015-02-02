@@ -118,7 +118,7 @@ static void free_post_info( postdata_t *pdi ) {
 	free( pdi );
 }
 
-inline void init_req_info(http_req_info_t * req_info) {
+inline static void init_req_info(http_req_info_t * req_info) {
     static const http_req_info_t trq = {0};
 	*req_info = trq;
 }
@@ -311,7 +311,7 @@ inline static int _parse_cookie_info( kv_item** root, const char* cstr, size_t s
 http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *err, char* getbuf, size_t buflen ) {
 
 	char *pbuf = NULL, *buf = NULL, *tmp = NULL;
-	size_t received; unsigned int i, j;
+	ssize_t received; unsigned int i; int j;
     http_req_info_t *reqinfo;
 	kv_item * lcurr = NULL;
 	kv_item * ltemp = NULL;
@@ -401,9 +401,9 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
 	}
 
 	// parse and decode requested url, tokenize get parameters
-	if( ( j = _parse_url( pbuf, i, reqinfo, flags ) ) < 0 ) {
+	if( (j = _parse_url( pbuf, i, reqinfo, flags )) < 0 ) {
 		if( err ) *err = j;
-		goto request_read_end;
+		goto request_read_end; 
 	}
 
 	// check if protocol version was sent, default is set to HTTP/1.0
