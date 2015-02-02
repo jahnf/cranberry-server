@@ -1,0 +1,11 @@
+{
+  "CRES": [
+    {
+      "prefix": "",
+      "files": [
+        { "name": "env.lsp" },
+        { "name": "favicon.ico" }
+      ]
+    }
+  ]
+}

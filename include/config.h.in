@@ -1,0 +1,10 @@
+/* Build configuration */
+#ifndef CONFIG_H__
+#define CONFIG_H__
+
+#define LUA_SUPPORT @LUA_SUPPORT@
+#define SQLITE_SUPPORT @SQLITE_SUPPORT@
+#define DEFLATE_SUPPORT @DEFLATE_SUPPORT@
+#define LOGGING @LOGGING@
+
+#endif
