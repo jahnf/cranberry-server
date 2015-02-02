@@ -1,0 +1,11 @@
+Files in this directory:
+
+sqlite3.c, sqlite3.h, sqlite3ext.h :
+  Amalgamation version of SQLite version 3.8.8.2
+  http://sqlite.org
+
+lsqlite3.c :
+  LuaSQLite 3 provides a means to manipulate SQLite3 
+  databases directly from lua using Lua 5. Version 0.9.3
+  http://lua.sqlite.org  
+   
