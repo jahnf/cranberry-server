@@ -42,11 +42,17 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 include(mkcres/mkcres.cmake)
 mkcres_add_library(server_resourcelib resources/resources.json mkcres)
 
-# Get git version string into variable $CRANBERRY_VERSION_STRING
-include(gitversion.cmake)
-GIT_DESCRIBE(${CMAKE_CURRENT_SOURCE_DIR} "CRANBERRY")
-
 # Add subdirectory projects
 add_subdirectory(strawberry-ini)
 add_subdirectory(src)
+
+# add custom targets and commands for version generation
+add_custom_target(versionheader DEPENDS version_header ) 
+add_custom_command(OUTPUT version_header ${CMAKE_CURRENT_BINARY_DIR}/include/version_string.h
+    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                         -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
+
+# create version header before building the server_version library
+add_dependencies(server_version versionheader)
+
 

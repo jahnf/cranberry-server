@@ -4,7 +4,7 @@
 #include "version.h"
 
 #ifdef GITVERSION
-    #include "gitversion.h"
+    #include "version_string.h"
 #endif
 
 #if defined(VERSION_STRING) 
