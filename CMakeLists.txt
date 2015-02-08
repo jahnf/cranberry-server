@@ -12,6 +12,11 @@ set(SQLITE_SUPPORT 1 CACHE BOOL "Build the web server with built in sqlite suppo
 set(DEFLATE_SUPPORT 1 CACHE BOOL "Build the web server with built in deflate support.")
 set(LOGGING 1 CACHE BOOL "Build in logging.")
 
+# Set default build type
+if( NOT CMAKE_BUILD_TYPE )
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # Build lua static lib
 if(LUA_SUPPORT)
     include_directories(lua)
@@ -37,6 +42,11 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/include")
 include(mkcres/mkcres.cmake)
 mkcres_add_library(server_resourcelib resources/resources.json mkcres)
 
+# Get git version string into variable $CRANBERRY_VERSION_STRING
+include(gitversion.cmake)
+GIT_DESCRIBE(${CMAKE_CURRENT_SOURCE_DIR} "CRANBERRY")
+
 # Add subdirectory projects
 add_subdirectory(strawberry-ini)
 add_subdirectory(src)
+

@@ -82,7 +82,7 @@ endif()
 add_library(server_version STATIC version.c)
 list(APPEND server_libs server_version)
 
-#set_property( SOURCE version.c APPEND PROPERTY COMPILE_DEFINITIONS "BZRREVNO")
+set_property( SOURCE version.c APPEND PROPERTY COMPILE_DEFINITIONS "VERSION_STRING=\"${CRANBERRY_VERSION_STRING}\"")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set_property( SOURCE version.c APPEND PROPERTY COMPILE_DEFINITIONS "BUILD_TYPE_ENUM=2")

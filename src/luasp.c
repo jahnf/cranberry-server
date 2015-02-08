@@ -48,7 +48,7 @@
  *  env.server.www_root
  *  env.server.script
  *  env.server.request_method
- *  env.server.server_revision
+ *  env.server.server_version
  *
  *  env.get_vars
  *  env.post_vars
@@ -278,7 +278,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
     lua_set_tablefield_string ( L, "www_root", (pSettings->wwwroot?pSettings->wwwroot:"") );
     lua_set_tablefield_string ( L, "script", ri->filename );
     lua_set_tablefield_string ( L, "request_method", http_request_type_to_str(ri->req_method) );
-    lua_set_tablefield_integer( L, "server_revision", RevisionNumber );
+    lua_set_tablefield_string ( L, "server_version", get_version_string() );
 #if DEFLATE_SUPPORT
     lua_set_tablefield_integer( L, "deflate_setting", pSettings->deflate );
 #endif

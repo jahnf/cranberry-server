@@ -26,10 +26,9 @@
 // print help -------------------------------
 void cmdline_print_help( const char *name, const int detail ) {
 
-	printf( "%s (", name);
-    printf( (RevisionNumber?"r%u":"?"), RevisionNumber );
+	printf( "%s (%s", name, get_version_string());
 
-	switch( BuildType ) {
+	switch( get_build_type() ) {
 	case BUILD_TYPE_DEBUG:
 	    printf(", debug)"); break;
 	case BUILD_TYPE_RELEASE:

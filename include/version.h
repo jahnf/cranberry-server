@@ -1,5 +1,4 @@
-/** @file cmdline.h
- *	@author Jahn Fuchs
+/** @file version.h
  *
  */
 
@@ -12,9 +11,7 @@ enum {
     BUILD_TYPE_DEBUG = 2
 };
 
-#ifndef ___VERSION_C_
-const extern unsigned RevisionNumber;
-const extern int      BuildType;
-#endif
+const char* get_version_string();
+int get_build_type();
 
 #endif /* VERSION__H_ */

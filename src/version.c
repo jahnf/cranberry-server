@@ -1,29 +1,30 @@
 /** @file version.c
  *	@author Jahn Fuchs
  */
-#define ___VERSION_C_
 #include "version.h"
 
-#ifdef BZRREVNO
-    #include "bzrrevno.h"
-    #define DO_EXPAND(VAL)  VAL ## 0
-    #define EXPAND(VAL)     DO_EXPAND(VAL)
+#ifdef GITVERSION
+    #include "gitversion.h"
+#endif
 
-    #if defined(BZR_REVISION) && (EXPAND(BZR_REVISION) != 0)
-        const unsigned RevisionNumber = BZR_REVISION;
-    #else
-        const unsigned RevisionNumber = 0;
-    #endif
+#if defined(VERSION_STRING) 
+    static const char version_string[] = VERSION_STRING;
 #else
-    #if REVISION_NUMBER
-        const unsigned RevisionNumber = REVISION_NUMBER;
-    #else
-        const unsigned RevisionNumber = 0;
-    #endif
+    static const char version_string[] = "?";
 #endif
 
 #if BUILD_TYPE_ENUM
-    const unsigned BuildType      = BUILD_TYPE_ENUM;
+    static const int build_type   = BUILD_TYPE_ENUM;
 #else
-    const unsigned BuildType      = BUILD_TYPE_UNKNOWN;
+    static const int build_type   = BUILD_TYPE_UNKNOWN;
 #endif
+
+const char* get_version_string()
+{
+    return version_string;
+}
+
+int get_build_type()
+{
+    return build_type;
+}

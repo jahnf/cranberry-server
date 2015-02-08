@@ -1,0 +1,19 @@
+
+find_package(Git)
+if(GIT_FOUND)
+#  message("git found: ${GIT_EXECUTABLE}")
+
+  MACRO(GIT_DESCRIBE dir prefix)
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe  --always --dirty --long
+      OUTPUT_VARIABLE ${prefix}_VERSION_STRING
+      ERROR_VARIABLE GIT_DESCRIBE_ERROR
+      RESULT_VARIABLE GIT_DESCRIBE_RESULT
+      WORKING_DIRECTORY ${dir}
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+      
+      IF( NOT GIT_DESCRIBE_ERROR STREQUAL "" )
+        MESSAGE(WARNING "Git error: ${GIT_DESCRIBE_ERROR}")
+      ENDIF( NOT GIT_DESCRIBE_ERROR STREQUAL "" )
+      
+    ENDMACRO(GIT_DESCRIBE dir prefix)
+endif()
