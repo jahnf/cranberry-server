@@ -113,6 +113,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS;_WINDOWS")
 else()
     # turn on all warnings in gcc
+    set_property(TARGET server_version APPEND PROPERTY COMPILE_FLAGS "-Wall")
     set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_FLAGS "-Wall")
     set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "REENTRANT")
 endif()

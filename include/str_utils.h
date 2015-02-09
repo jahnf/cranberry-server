@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-/* C linked list of c-character strings */
+/** C linked list of c-character strings. */
 typedef struct stringlist_t stringlist_t;
 struct stringlist_t {
     char *str;
@@ -21,10 +21,9 @@ stringlist_t* stringlist_push_back( stringlist_t* sl, const char* str );
 unsigned stringlist_len( const stringlist_t* sl );
 void stringlist_free( stringlist_t* sl );
 
-
-/* string manipulations */
-/** trim a string on the right end (removes blanks) */
+/** Trim a string on the right end (removes blanks). */
 char *strtrim_right( char *p );
+/** Trim a string on the right end (removes blanks). */
 char *strtrim_right_e( char *beg, char *end );
 
 /* url decoding */

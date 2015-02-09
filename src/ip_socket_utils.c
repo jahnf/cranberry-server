@@ -4,10 +4,7 @@
 #include "settings.h"
 #include "log.h"
 
-SETLOGMODULENAME("ip_socket_utils")
-
-#define SERVER_PORT_MIN 1
-#define SERVER_PORT_MAX 60000
+SETLOGMODULENAME("ip_socket_utils");
 
 /*
  * helper function to retrieve ip4/ip6 addresses
@@ -60,7 +57,7 @@ int server_getaddrinfo( thread_arg_t *args,
 }
 
 
-/* windows specific stuff */
+/* MS Windows specific stuff */
 #ifdef _WIN32
 const char *inet_ntop_w32(int af, const void *src, char *dst, socklen_t cnt, const void *in_sa )
 {

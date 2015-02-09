@@ -2,14 +2,8 @@
 #define KV_ITER_H__
 
 #ifdef __cplusplus
-#define BEGIN_C extern "C" {
-#define END_C }
-#else
-#define BEGIN_C
-#define END_C
+extern "C" {
 #endif
-
-BEGIN_C
 
 #include <string.h>
 /**
@@ -77,6 +71,8 @@ void kviter_reset( kviter_t* kvi,
 int kviter_next( kviter_t* kvi );
 int kviter_next_i( kviter_t* kvi, int ignore_leading_char, char c );
 
-END_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif  /* KV_ITER_H__ */

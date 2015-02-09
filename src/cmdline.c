@@ -23,7 +23,7 @@
 	#define DIR_SEPERATOR  '/'
 #endif
 
-// print help -------------------------------
+/* Print help to console */
 void cmdline_print_help( const char *name, const int detail ) {
 
 	printf( "%s (%s", name, get_version_string());
@@ -103,19 +103,17 @@ void cmdline_print_help( const char *name, const int detail ) {
 			"   Example: %s -p 8181 &\n\n", name);
 }
 
-
-// returns 0 on success
 int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** config_file ) {
 
 	server_settings_t *pSettings = args->pSettings;
 	int i=1, err=CMDLINE_OKAY;
 
-    //check command line arguments
+    /* check command line arguments */
 	for( ; i < argc; ++i ) {
 
 		if( !strcmp(argv[i], "-p") ) {
 			if( i+1 < argc && ++i ) {
-				pSettings->port = atoi( argv[i] );	// set port
+				pSettings->port = atoi( argv[i] );	/* set port */
 			}
 			else {
 				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
@@ -124,7 +122,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
 		else if( !strcmp(argv[i], "-c") ) {
 			if( i+1 < argc && ++i ) {
-				*config_file = argv[i]; //set config file to load
+				*config_file = argv[i]; /* set config file to load */
 			}
 			else {
 				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
@@ -133,7 +131,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
 		else if( !strcmp(argv[i], "-d") ) {
 			if( i+1 < argc && ++i ) {
-				// set www root dir
+				/* set www root dir */
 				if( pSettings->wwwroot != NULL )
 					free( pSettings->wwwroot );
 				if( (pSettings->wwwroot  = malloc( strlen(argv[i]) + 2 )) ) {
@@ -150,13 +148,13 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 			}
 		}
 		else if( !strcmp(argv[i], "-rd") ) {
-			/*disable embedded resources*/
+			/* Disable embedded resource lookups */
 			pSettings->disable_er = 1;
 		}
 #if DEFLATE_SUPPORT 
 		else if( !strcmp(argv[i], "-deflate") ) {
 			if( i+1 < argc && ++i ) {
-				// set deflate option
+				/* set deflate option */
 				pSettings->deflate = atoi( argv[i] );
 				if( pSettings->deflate < 0 || pSettings->deflate > 9 || !strlen(argv[i]) ) {
 					fprintf(stderr, "%s option needs argument between 0-9\n\n", argv[i-1]);
@@ -172,7 +170,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 #if LUA_SUPPORT
 		else if( !strcmp(argv[i], "-luasp") ) {
 			if( i+1 < argc && ++i ) {
-				// set scripting enable option
+				/* set scripting enable option */
 				pSettings->scripting.enabled = atoi( argv[i] );
 				if( pSettings->scripting.enabled < 0
 				        || pSettings->scripting.enabled > 1
@@ -188,7 +186,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
         else if( !strcmp(argv[i], "-sc") ) {
             if( i+1 < argc && ++i ) {
-                // set scripting cache option
+                /* set scripting cache option */
                 size_t len = strlen( argv[i] );
                 size_t j = 0;
                 pSettings->scripting.cache = 0;
@@ -214,7 +212,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 #endif
 		else if( !strcmp(argv[i], "-l") ) {
 			if( i+1 < argc && ++i ) {
-				//set logfile
+				/* set log file */
 				free ( pSettings->logfile );
 				if( (pSettings->logfile = malloc( strlen(argv[i]) + 1 )) )
 					strcpy( pSettings->logfile, argv[i] );
@@ -226,7 +224,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
 		else if( !strcmp(argv[i], "-llf") ) {
 			if( i+1 < argc && ++i ) {
-				//set loglevel file
+				/* set file log level */
 				int level = atoi( argv[i] );
 				if( level >= 0 && level <= log_VERBOSE )
     				pSettings->loglevel_file = level;
@@ -242,7 +240,7 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
 		else if( !strcmp(argv[i], "-llc") ) {
 			if( i+1 < argc && ++i ) {
-				//set loglevel file
+				/* set console log level */
 				int level = atoi( argv[i] );
 				if( level >= 0 && level <= log_VERBOSE )
     				pSettings->loglevel_console = level;
@@ -258,12 +256,12 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 		}
 		#ifdef _WIN32
 		else if(!strcmp(argv[i], "-service")) {
-			// skip -service option
+			/* skip -service option */
 		}
 		#endif
 		else {
 			if( strcmp(argv[i], "-h") && strcmp(argv[i], "-H") && strcmp(argv[i], "-?") ) {
-				//unknown arguments
+				/* unknown arguments */
 				fprintf(stderr, "unknown command line option '%s'\n\n", argv[i]);
 				err = CMDLINE_FORMAT_ERROR;
 			}

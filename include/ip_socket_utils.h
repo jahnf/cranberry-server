@@ -1,8 +1,8 @@
 #ifndef IP_SOCKET_UTILS__H_
 #define IP_SOCKET_UTILS__H_
 
-/* first some windows specific includes and defines */
 #ifdef _WIN32
+    /* MS Windows specific includes and defines */
     #ifndef _WIN32_WINNT
         #define _WIN32_WINNT 0x0501
     #endif
@@ -16,7 +16,7 @@
     const char *inet_ntop_w32(int af, const void *src, char *dst, socklen_t cnt, const void *in_sa);
     #define inet_ntop(a,b,c,d,e) inet_ntop_w32(a,b,c,d,e)
 #else
-    /* [ -- aix needs this */
+    /* [ -- AIX needs this */
     #include <sys/socket.h>
     #include <netinet/in.h>
     /* ] */
@@ -29,6 +29,11 @@
 
 #include "webthread.h"
 
+#define SERVER_PORT_MIN 1
+#define SERVER_PORT_MAX 60000
+
+/** Helper function to retrieve IPv4/IPv6 addresses 
+ * for opening sockets */
 int server_getaddrinfo( thread_arg_t *args,
         int *v4avail, struct sockaddr_in *addrv4,
         int *v6avail, struct sockaddr_in6 *addrv6 );

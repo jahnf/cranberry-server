@@ -1,6 +1,34 @@
 /** @file settings.c
- *	@author Jahn Fuchs
+ * Functionality to read the server settings from a config file.
+ * Read an settings from a file, the following settings are supported 
+ * (lines starting with # are optional)
+ * some settings can be overwritten via command line options..
  *
+ * [server]
+ * # wwwroot= www root directory, none by default
+ * # port= server port, 8181 default
+ * # logfile = logfile, ~/cranberry-server.log by default
+ * # loglevel_file = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) 
+ *                    -  2 by default (warning)
+ * # loglevel_console = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) 
+ *                       -  1 by default (error)
+ * # ipv6 = 1 or 0, 1 by default / enables or disables ipv6 support
+ * # deflate = 0-9, 0 is off = default, 1-9 is compression level, 
+ *                              while 1 is the fastest and 9 the best compression
+ * # disable_embedded_res = 0 or 1, 0 by default
+ *
+ * # [scripting]
+ * # enabled = 0 or 1,  1 by default
+ * # error_output_socket = 1 or 0, 1 by default
+ * # session_timeout = ..     1800 by default
+ * # caching = 0 or 1, 0 by default
+ * 
+ * # [scripting_cache]  ; only used if scripting.caching = 1
+ * # cache_tmpfile = 0 or 1, 1 by default (if scripting caching =1)
+ * # cache_memory = 0 or 1, 0 by default
+ * # cache_memory_limit_mb = [max cache size in mb], 10 by default
+ * # cache_tmpfile_limit_mb = [max cache size in mb], 50 by default
+ * 
  */
 
 #include <string.h>
@@ -15,38 +43,11 @@
 
 #define WEBSRV_PORT_DEFAULT 8181
 #define LUASP_SESSION_TIMEOUT_DEFAULT 1800
+#define SERVERLOG_DEFAULT "cranberry-server.log"
 
 #define INI_SECTION_SERVER 		    "server"
 #define INI_SECTION_SCRIPTING	    "scripting"
 #define INI_SECTION_SCRIPTING_CACHE "scripting_cache"
-
-/*
- * read an ini settings file, following settings are supported (# are optional)
- * some settings can be overwritten via command line options..
- *
- *  [server]
- *# wwwroot= www root directory, none by default
- *# port= server port, 8181 default
- *# logfile = logfile, ~/mws.log by default
- *# loglevel_file = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) -  2 by default (warning)
- *# loglevel_console = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) -  1 by default (error)
- *# ipv6 = 1 or 0, 1 by default / enables or disables ipv6 support
- *# deflate = 0-9, 0 is off = default, 1-9 is compression level, while 1 is the fastest and 9 the best compression
- *# disable_embedded_res = 0 or 1, 0 by default
- *# [scripting]
- *# enabled = 0 or 1,  1 by default
- *# error_output = 1 or 0, 1 by default
- *# session_timeout = ..     1800 by default
- *# caching = 0 or 1, 0 by default
- *#
- *# [scripting_cache]  ; only used if scripting.caching = 1
- *# cache_tmpfile = 0 or 1, 1 by default (if scripting caching =1)
- *# cache_memory = 0 or 1, 0 by default
- *# cache_memory_limit_mb = [max cache size in mb], 10 by default
- *# cache_tmpfile_limit_mb = [max cache size in mb], 50 by default
- *#
- *
- */
 
 /* init webserver settings */
 server_settings_t * settings_init( void ) {
@@ -67,7 +68,7 @@ server_settings_t * settings_init( void ) {
         #if LUA_SUPPORT
             pSettings->scripting.enabled = SETTING_VAL_NOT_SET;
             pSettings->scripting.cache = SETTING_VAL_NOT_SET;
-            pSettings->scripting.error_output = 1;
+            pSettings->scripting.error_output_socket = 1;
         #endif
     }
     return pSettings;
@@ -85,7 +86,7 @@ void settings_free(server_settings_t *pSettings ) {
 static void _settings_SetDefaultLogFile( server_settings_t *pSettings ) {
 
     const char * homedir = cfile_get_homedir();
-    static const char * logfile = "mws.log";
+    static const char * logfile = SERVERLOG_DEFAULT;
 
     if( pSettings->logfile )
         free( pSettings->logfile );
@@ -113,7 +114,7 @@ static void _settings_setdefault( server_settings_t *pSettings, int OverwriteExi
     #if LUA_SUPPORT
         if( OverwriteExisting || pSettings->scripting.enabled == SETTING_VAL_NOT_SET )
             pSettings->scripting.enabled = 1;
-        pSettings->scripting.error_output = 1;
+        pSettings->scripting.error_output_socket = 1;
         pSettings->scripting.session_timeout = LUASP_SESSION_TIMEOUT_DEFAULT;
         if( OverwriteExisting || pSettings->scripting.cache == SETTING_VAL_NOT_SET )
             pSettings->scripting.cache = LUASP_CACHING_NONE;
@@ -217,7 +218,7 @@ int settings_loadini(server_settings_t *pSettings, const char* filename, int Def
     #if LUA_SUPPORT
         if( pSettings->scripting.enabled == SETTING_VAL_NOT_SET )
                 pSettings->scripting.enabled = ini_dictionary_getboolean( ini, INI_SECTION_SCRIPTING, "enabled", 1 );
-        pSettings->scripting.error_output = ini_dictionary_getboolean( ini, INI_SECTION_SCRIPTING, "error_output", 1 );
+        pSettings->scripting.error_output_socket = ini_dictionary_getboolean( ini, INI_SECTION_SCRIPTING, "error_output_socket", 1 );
         pSettings->scripting.session_timeout = ini_dictionary_getint( ini, INI_SECTION_SCRIPTING, "session_timeout", LUASP_SESSION_TIMEOUT_DEFAULT );
         if( pSettings->scripting.cache == SETTING_VAL_NOT_SET ) {
             pSettings->scripting.cache = LUASP_CACHING_NONE;

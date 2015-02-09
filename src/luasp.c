@@ -1,46 +1,51 @@
-/**
- * The webserver can use embedded scripting inside dynamic pages, lua server pages.
- * For a complete description of the lua scripting language go to http://www.lua.org
- * Currently lua 5.1 and 5.2 can be embedded with this webserver.
+/** @file luasp.c
+ * Implementation of embedded lua scripting.
+ * The webserver can use embedded scripting inside dynamic pages (Lua server pages).
+ * For a complete description of the Lua scripting language go to http://www.lua.org
+ * Currently Lua 5.3 is compiled and included with the server.
  *
- * Inside lua server pages (*.lsp), script tags like known from PHP can be used:
- * <? ...  some lua code ... ?>, also <?=some_lua_var?> can be used
- * the lua environment is set up and the following additional functions exist:
+ * Inside Lua server pages (*.lsp), script tags known from PHP can be used:
+ * <? ...  some Lua code ... ?>, also <?=some_lua_var?> can be used.
+ * 
+ * The Lua environment is set up and the following additional functions exist:
  * - echo( ... ), write ( ... )
- *    variable number of arguments, print out arguments to current http_buffer
- *    if no http headers were sent before the first echo/write call,
- *    the http headers are sent automatically
+ *    Variable number of arguments, print out arguments to current http_buffer.
+ *    If no http headers were sent before the first echo/write call,
+ *    the http headers are sent automatically.
  * - http_header( header_field [, value] )
- *    set a http header field to a certain value. This function must be called
- *    before any echo/write or html output to have any effect. If the second parameter is
- *    'nil' the header field is unset if existing. If called with the header_field
- *    argument only, the value of that header field is returned or nil if the header field is not set.
- *    !! common header fields like 'Date', 'Transfer-Encoding' and others might get
- *       overwritten by the webserver..
+ *    Set a http header field to a certain value. This function must be called
+ *    before any echo/write call or html output to have any effect. If the second parameter 
+ *    is 'nil' the header field is unset if existing. If called with the header_field
+ *    argument only, the value of that header field is returned 
+ *    (or nil if the header field is not set).
+ *    CAUTION: Common header fields like 'Date', 'Transfer-Encoding' and 
+               others might get overwritten by the web server.
  * - http_response_code( [code] )
- *    sets and respectably gets the http return code which is about to be sent,
- *    must be called before any echo/write or html output to have any effect.
+ *    Sets and respectably gets the http return code which is about to be sent,
+ *    must be called before any echo/write call or html output to have any effect.
  * - session_start( [max_age_in_sec] )
- *    creates a session or resumes the current one based on a session identifier
- *    passed via a cookie, the env.session table is set accordingly.
- *    returns the session id as string. In most cases it's necessary to call
- *    session_start() before the first echo/write/html output, so that the Set-Cookie
+ *    Creates a session or resumes the current one based on a session identifier
+ *    passed via a cookie. The env.session table is set accordingly.
+ *    Returns the session id as a string. In most cases it's necessary to call
+ *    session_start() before the first echo/write/html output, so that the 'Set-Cookie'
  *    header is set and sent correctly. max_age_in_sec defaults to LUASP_SESSION_TTL_DEFAULT
- *    which is 1800 seconds (30min) by default.  if max_age_in_sec is a negative
- *    number an expire date in the past is sent to the browser.
+ *    which is 1800 seconds (30min) by default.  If max_age_in_sec is a negative
+ *    number an expire date in the past is sent to the browser (Which will tell
+ *    browser that the cookie is expired)
  * - session_var( var_name [, var_value] )
- *    set and get session variables. the global env.session table is also set accordingly.
- *    to unset a session variable set var_value to nil. This function needs
- *    a call to session_start() to have any effect.
+ *    Set or get session variables. The global env.session table is also set accordingly.
+ *    To unset a session variable set var_value to nil. This function needs
+ *    a prior call to session_start() to have any effect.
  * - session_destroy()
  *    Destroys a session and the associated session variables.
  *    Call this function after a call to session_start() to have any effect.
  *    Call this function before any echo/write/html output, to have any effect on
- *    the set-cookie header field (set cookie expire-field to the past)
+ *    the set-cookie header field (sets the cookie expire-field to the past which
+ *    will tell the browser to set the cookie to expired)
  *
- *  ------------ variables
- *  different environment variables are set up, so settings, get, post and
- *  cookies can be accessed from scripts.
+ *  ------------ Lua Variables
+ *  Different environment variables are set up and available in the Lua script parts.
+ *  Server settings, get, post and cookies can be accessed from scripts.
  *
  *  env.server.remote_addr
  *  env.server.remote_port
@@ -83,7 +88,7 @@
 #include <lualib.h>
 #include <string.h>
 
-SETLOGMODULENAME("lsp")
+SETLOGMODULENAME("luasp");
 
 #ifndef __cplusplus
     #ifdef _MSC_VER
@@ -92,12 +97,12 @@ SETLOGMODULENAME("lsp")
     #endif
 #endif
 
-/* uncomment the following if you want to keep \r & \n after ?> closing tags */
+/* Uncomment the following if you want to keep \r & \n after ?> closing tags */
 /*#define LUASP_LEAVE_LF_UNTOUCHED*/
 
 /** luasp initialization data */
 typedef struct {
-    void *cache; /* needs to be set for caching */
+    void *cache; /**< needs to be set for caching */
 } luasp_idata_t;
 
 /* init and free functions. later used to init cache and other things.. */
@@ -174,7 +179,8 @@ static void _lsp_send_headers( luasp_page_state_t *es ) {
 
 
 /* C implementation of the luasp echo/write function */
-static int lsp_echo( lua_State *L ) {
+static int lsp_echo( lua_State *L ) 
+{
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
     int i;
@@ -200,7 +206,8 @@ static int lsp_echo( lua_State *L ) {
 }
 
 /* C implementation of the luasp http_response code function */
-static int lsp_http_response_code( lua_State *L ) {
+static int lsp_http_response_code( lua_State *L ) 
+{
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
 
@@ -215,7 +222,8 @@ static int lsp_http_response_code( lua_State *L ) {
 }
 
 /* C implementation of the luasp http_header function */
-static int lsp_http_header( lua_State *L ) {
+static int lsp_http_header( lua_State *L ) 
+{
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
 
@@ -261,15 +269,17 @@ static int lsp_http_header( lua_State *L ) {
     return 0;
 }
 
-/* helper function to set up global lua tables and variables for lua state with informations
- * from the request and with general webserver settings... */
+/* Helper function to set up global lua tables and variables for 
+ * the Lua state with informations from the HTTP request 
+ * and with general web server settings. */
 inline
-static void _fill_environment( lua_State *L, const http_req_info_t *ri, const thread_arg_t *args ) {
+static void _fill_environment( lua_State *L, const http_req_info_t *ri, const thread_arg_t *args )
+{
     const server_settings_t *pSettings = args->pSettings;
     kv_item *iter;
 
     lua_newtable( L );
-    // server (like the $_SERVER variable in php )
+    /* server: (like the $_SERVER variable in php ) */
     lua_pushstring( L, "server");
     lua_newtable( L );
     lua_set_tablefield_string ( L, "remote_addr", args->client_addr );
@@ -282,10 +292,10 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
 #if DEFLATE_SUPPORT
     lua_set_tablefield_integer( L, "deflate_setting", pSettings->deflate );
 #endif
-    //_set_tablefield_boolean( L, "embedded_resources_enabled", !pSettings->disable_er );
+    lua_set_tablefield_boolean( L, "embedded_resources_enabled", !pSettings->disable_er );
     lua_settable(L, -3);
 
-    // http headers
+    /* http headers */
     lua_pushstring( L, "headers");
     lua_newtable( L );
 
@@ -293,7 +303,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
         lua_set_tablefield_string( L, iter->key, iter->value );
 
     lua_settable(L, -3);
-    // cookies
+    /* cookies */
     lua_pushstring( L, "cookies");
     lua_newtable( L );
 
@@ -301,7 +311,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
         lua_set_tablefield_string( L, iter->key, iter->value );
 
     lua_settable(L, -3);
-    // get vars
+    /* GET vars */
     lua_pushstring( L, "get_vars");
     lua_newtable( L );
 
@@ -310,7 +320,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
     }
 
     lua_settable(L, -3);
-    // post vars
+    /* POST vars */
     lua_pushstring( L, "post_vars");
     lua_newtable( L );
 
@@ -318,7 +328,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
         lua_set_tablefield_string( L, iter->key, iter->value );
 
     lua_settable(L, -3);
-    // empty session table
+    /* Empty session table */
     lua_pushstring( L, "session");
     lua_newtable( L );
     lua_settable(L, -3);
@@ -326,7 +336,7 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
     lua_setglobal( L, LUASP_ENV_VAR_NAME );
 }
 
-/* register lua functions in a given lua state */
+/* Register Lua functions in a given Lua state */
 inline
 static void _luasp_regfuncs( lua_State *L ) {
     lua_register( L, "echo", lsp_echo );
@@ -365,15 +375,16 @@ static const luaL_Reg preloadedlibs[] = {
     {NULL, NULL}
 };
 
-/* load all libs in lualibs[] in a given lua state */
-inline static void _luasp_openlibs( lua_State *L ) {
+/* Load all libs in lualibs[] in a given lua state */
+inline static void _luasp_openlibs( lua_State *L ) 
+{
     const luaL_Reg *lib;
-    /* call open functions from 'loadedlibs' and set results to global table */
+    /* Call open functions from 'loadedlibs' and set results to global table */
     for ( lib = lualibs; lib->func; ++lib ) {
         luaL_requiref(L, lib->name, lib->func, 1);
         lua_pop(L, 1);  /* remove lib */
     }
-    /* add open functions from 'preloadedlibs' into 'package.preload' table */
+    /* Add open functions from 'preloadedlibs' into 'package.preload' table */
     luaL_getsubtable(L, LUA_REGISTRYINDEX, "_PRELOAD");
     for (lib = preloadedlibs; lib->func; ++lib ) {
       lua_pushcfunction(L, lib->func);
@@ -383,8 +394,10 @@ inline static void _luasp_openlibs( lua_State *L ) {
 }
 
 inline
-static kv_item * _push_cache_control_headers_front( kv_item *headers ) {
-    static const char cc_value[] = "no-store, no-cache, must-revalidate, post-check=0, pre-check=0";
+static kv_item * _push_cache_control_headers_front( kv_item *headers ) 
+{
+    static const char cc_value[] = "no-store, no-cache, must-revalidate, "
+                                   "post-check=0, pre-check=0";
 
     /* init default cache limiter headers -------------------- */
     headers = kvlist_new_item_push_front_ll( HTTP_HEADER_CACHE_CONTROL, 13,
@@ -396,16 +409,14 @@ static kv_item * _push_cache_control_headers_front( kv_item *headers ) {
     return headers;
 }
 
-/* luasp main function, tries to open the requested file and interpret
- * it as lua server page */
-int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
-
+int luasp_process( http_req_info_t *ri, thread_arg_t *args ) 
+{
     server_settings_t* pSettings = args->pSettings;
     luasp_state_t lst = {0,0,0,0,LST_INIT,1,0};
 
     /* check for resources if not disabled */
     if( !pSettings->disable_er ) {
-        /* look for filename in embedded resources */
+        /* look for file name in embedded resources */
         cresource_t *efile = get_cresource( ri->filename );
         if( efile != NULL ) {
             lst.dp = lst.dp_cur = efile->data;
@@ -413,24 +424,22 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
         }
     }
 
-    /* if no embedded resource was set or found
-     * and a www root dir was set, try to find and open file
-     */
+    /* If no embedded resource was set or found and a
+     * www root directory was set, try to find and open the given file. */
     if( !lst.dp && pSettings->wwwroot ) {
         cfile_stat_t st;
         if( cfile_getstat( ri->filename, &st ) == CFILE_SUCCESS ) {
-            if( st.type == CFILE_TYPE_REGULAR && (lst.fp = fopen(ri->filename, "rb")) ) {
-                /* success on opening file */
-            } else {
+            if( st.type != CFILE_TYPE_REGULAR || !(lst.fp = fopen(ri->filename, "rb")) ) {
                 /* not a regular file or error opening file */
-                send_buffer_error_info( args->sendbuf, ri->filename, HTTP_STATUS_FORBIDDEN, ri->http_version );
+                send_buffer_error_info( args->sendbuf, ri->filename, 
+                                        HTTP_STATUS_FORBIDDEN, ri->http_version );
                 return 0;
             }
         }
     }
 
+    /* If data pointer or file pointer is set */
     if( lst.dp || lst.fp ) {
-
         lua_State *L;
         luasp_page_state_t es = { args, ri, 0, HTTP_STATUS_OK, NULL, NULL, NULL };
         int status;
@@ -438,14 +447,15 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
         const char* (*luasp_reader_func)( lua_State* L , void *ud, size_t* size )
                 = lst.dp?luasp_reader_res:luasp_reader_file;
 
-        /* if http version is 1.1 we send the result in chunked transfer encoding, because we
+        /* If HTTP version is 1.1 we send the result in chunked transfer encoding, because we
            don't know the size of the document beforehand */
         if( ri->http_version == HTTP_VERSION_1_1 ) args->sendbuf->flags |= SBF_CHUNKED;
 
-        /* create a new lua state */
+        /* Create a new Lua state */
         if(	(L = luaL_newstate()) == NULL ) {
             /* memory allocation error */
-            send_buffer_error_info( args->sendbuf, ri->filename, HTTP_STATUS_INTERNAL_SERVER_ERROR, ri->http_version );
+            send_buffer_error_info( args->sendbuf, ri->filename, 
+                                    HTTP_STATUS_INTERNAL_SERVER_ERROR, ri->http_version );
             return 1;
         }
 
@@ -468,21 +478,23 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
             if( !es.headers_sent ) {
                 _lsp_send_headers( &es );
             }
-            if( pSettings->scripting.error_output ) {
-                send_buffer_string( args->sendbuf, "luasp load error: " );
+            if( pSettings->scripting.error_output_socket ) {
+                send_buffer_string( args->sendbuf, "Luasp load error: " );
                 send_buffer_string( args->sendbuf, errmsg );
             }
             LOG_FILE( log_ERROR, "load: %s:%i, %s", ri->filename, lst.line, errmsg );
 
         /* if successfully loaded, execute script... */
         } else {
-
-            /* TODO here we could dump the lua chunk to the cache if not already loade from it */
+            /* TODO here we could dump the lua chunk to the cache 
+               if not already loaded from a cache */
             /* TODO else we need to register functions and load libs*/
-            /* register luasp functions: ---------------------------------- */
+            
+            /* Register Luasp functions */
             _luasp_regfuncs( L );
-            /* init & register global userdata variable: */
-            /* register global userdata variable */
+            
+            /* Init and register global user data variable: */
+            /* register global user data variable */
             lua_pushlightuserdata( L, &es );
             lua_setglobal( L, LUASP_GLOB_USERDATA_NAME );
             /* open lua's default libraries: */
@@ -494,7 +506,7 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
             if( (status = lua_pcall(L, 0, LUA_MULTRET, 0)) ) {
                 const char *errmsg = lua_tostring(L,-1);
                 if( !es.headers_sent ) _lsp_send_headers( &es );
-                if( pSettings->scripting.error_output ) {
+                if( pSettings->scripting.error_output_socket ) {
                     send_buffer_string( args->sendbuf, "luasp call error: " );
                     send_buffer_string( args->sendbuf, errmsg );
                 }
@@ -508,8 +520,9 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args ) {
         if( es.session != NULL ) free( es.session );
         kvlist_free( es.headers );
     }
-    else /* file does not exist */
+    else { /* file does not exist */
         send_buffer_error_info( args->sendbuf, ri->filename, HTTP_STATUS_NOT_FOUND, ri->http_version );
+    }
 
     return 0;
 }

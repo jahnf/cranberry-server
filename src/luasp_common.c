@@ -10,23 +10,28 @@
     #endif
 #endif
 
-/* helper function for setting a table string value
- * for the current top stack value */
-inline void lua_set_tablefield_string( lua_State *L, const char* key, const char *value ) {
-    lua_pushstring( L, key);
+inline void lua_set_tablefield_string( lua_State *L, const char* key, const char *value ) 
+{
+    lua_pushstring(L, key);
     if( !value )
-        lua_pushstring( L, "" );
+        lua_pushstring(L, "") ;
     else
-        lua_pushstring( L, value );
+        lua_pushstring(L, value);
 
     lua_settable(L, -3);
 }
 
-/* helper function for setting a table integer value
- * for the current top stack value */
-inline void lua_set_tablefield_integer( lua_State *L, const char* key, const int value ) {
-    lua_pushstring( L, key);
-    lua_pushinteger( L, value );
+inline void lua_set_tablefield_integer( lua_State *L, const char* key, const int value ) 
+{
+    lua_pushstring(L, key);
+    lua_pushinteger(L, value);
+    lua_settable(L, -3);
+}
+
+inline void lua_set_tablefield_boolean( lua_State *L, const char* key, const int value ) 
+{
+    lua_pushstring(L, key);
+    lua_pushboolean(L, value);
     lua_settable(L, -3);
 }
 

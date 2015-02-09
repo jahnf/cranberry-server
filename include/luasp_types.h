@@ -6,10 +6,12 @@
 
 #define LUASP_GLOB_USERDATA_NAME "__luasp_args_"
 #define LUASP_ENV_VAR_NAME "env"
-/* date in the past, that is sent to make cookies invalid
+
+/* Date in the past, that is sent to make cookies invalid
  * .. also, most important date in history of mankind ;) */
 #define LUASP_DATE_IN_PAST "Fri, 01 Oct 1982 23:52:00 GMT"
-/* maximum cache entry age in seconds*/
+
+/* Maximum cache entry age in seconds*/
 #define LUASP_CACHE_MAX_AGE 3600
 
 #include "webthread.h"
@@ -18,7 +20,7 @@
 
 #include <stdio.h>
 
-/* states for the lua server page file reader */
+/** States for the Lua server page file reader */
 enum {
     LST_UNDEFINED = 0,
     LST_CHAR1,
@@ -43,28 +45,27 @@ enum {
 
 #define LUASP_BUFLEN 1024
 
-/* A state that is used as userdata and given as argument
+/** A state that is used as userdata and given as argument
  * to consecutive calls of luasp_reader_xxx */
 typedef struct {
     /* for embedded resources */
-    const unsigned char* dp;     /* input data */
-    const unsigned char* dp_end; /* input data end */
-    const unsigned char* dp_cur; /* input data cur pos */
+    const unsigned char* dp;     /**< Input data pointer */
+    const unsigned char* dp_end; /**< Input data pointer end */
+    const unsigned char* dp_cur; /**< Input data current position */
     /* for files */
-    FILE* fp;					/* input file */
+    FILE* fp;					/**< Input file */
 
-    int st;						/* current state */
-    int line;					/* file line number */
-    int cur_line_echo;			/* was there an echo command on the current line? */
+    int st;						/**< Current state */
+    int line;					/**< File line number */
+    int cur_line_echo;			/**< Was there an echo command on the current line? */
 
-    unsigned char buf[LUASP_BUFLEN + 32];	// output buffer
-    unsigned int buf_offset;
-
+    unsigned char buf[LUASP_BUFLEN + 32];	/**< output buffer */
+    unsigned int buf_offset;                /**< buffer offset */
 } luasp_state_t;
 
-/* lua page state that is registered as global lua userdata
+/** Lua page state that is registered as global Lua userdata
  * variable, so it can be used as information by custom
- * lua c functions like http_header and others */
+ * Lua c functions like http_header and others */
 typedef struct {
     thread_arg_t *args;
     http_req_info_t *ri;
@@ -74,7 +75,6 @@ typedef struct {
     session_t *session;
     kv_item **sess_vars;
 } luasp_page_state_t;
-
 
 #endif
 #endif

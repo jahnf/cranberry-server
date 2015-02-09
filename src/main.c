@@ -56,20 +56,17 @@
 #endif
 
 #include "log.h"
-SETLOGMODULENAME("main")
-
-#define SERVER_PORT_MIN 1
-#define SERVER_PORT_MAX 60000
+SETLOGMODULENAME("main");
 
 #define THREAD_STACK_SIZE 512000
 #define DEFAULT_CONFIG_FILE "mws.ini"
 
-/* local globals */
-static int main_exit_code = EXIT_SUCCESS; /* return value of main program */
-static int main_loop      =  1;           /* the main loop loops while main_loop is 1*/
-static int listenfd4      = -1;           /* listen file descriptor for ipv4 */
-static int listenfd6      = -1;           /* listen file descriptor for ipv6 */
-static int exit_sig_caught=  0;           /* set to 1 if a signal was caught */
+/* Local globals */
+static int main_exit_code = EXIT_SUCCESS; /* Return value of main program */
+static int main_loop      =  1;           /* The main loop loops while main_loop is 1*/
+static int listenfd4      = -1;           /* Listen file descriptor for ipv4 */
+static int listenfd6      = -1;           /* Listen file descriptor for ipv6 */
+static int exit_sig_caught=  0;           /* Set to 1 if a signal was caught */
 
 static void server_deinitialize( thread_arg_t *args );
 
@@ -84,9 +81,9 @@ void exit_signal_handler( int sig ) {
         closesocket(listenfd6);
 }
 
-/* webserver main */
-MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) {
-
+/* Web server main */
+MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) 
+{
     int IPv4 = 0;
     int IPv6 = 0;
     int highfd;
@@ -99,30 +96,30 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) {
     thread_arg_t *arguments, baseargs = {0};
     server_settings_t* pSettings = NULL;
 
-    static struct sockaddr_in cli_addr4 =   {0};  /* static = initialized to zeros */
-    static struct sockaddr_in6 cli_addr6 =  {0};  /* static = initialized to zeros */
-    static struct sockaddr_in serv_addr4 =  {0};  /* static = initialized to zeros */
-    static struct sockaddr_in6 serv_addr6 = {0};  /* static = initialized to zeros */
-
+    /* static = initialized to zeros */
+    static struct sockaddr_in cli_addr4 =   {0};
+    static struct sockaddr_in6 cli_addr6 =  {0};
+    static struct sockaddr_in serv_addr4 =  {0};
+    static struct sockaddr_in6 serv_addr6 = {0};
+    
     socklen_t length;
-    c_thread mythread;      /* Posix and Windows thread */
-    c_thread pirthread;
-    int pirthread_started = 0;
+    c_thread mythread;      /* Posix/Windows thread */
 
     #ifdef _WIN32
+        /* Initialization of sockets for MS Windows. */
         WSADATA wsa_data;
         WSAStartup(MAKEWORD(1,1), &wsa_data);
     #endif
 
-    /* init settings */
+    /* Initialize server settings */
     pSettings = baseargs.pSettings = settings_init();
     if( !pSettings ) {
-        fprintf( stderr, "error: settings_init\n" );
+        fprintf( stderr, "Error: settings_init\n" );
         main_exit_code = EXIT_FAILURE;
         goto label_nolog_exit;
     }
 
-    {   /* parse command line arguments */
+    {   /* Parse command line arguments */
         int err = cmdline_parse( &baseargs, argc, argv, &config_file );
         if( err != CMDLINE_OKAY ) {
 
@@ -271,9 +268,6 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) {
 
     LOG( log_INFO, "Entering main loop" );
 
-    /* start pir sensor loop */
-    /* pirthread_started = cthread_create( &pirthread, pir_loop, NULL ); */
-
     /* Server main loop */
     while( main_loop ) {
 
@@ -357,7 +351,6 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) {
     label_exit:
     LOG( log_ALWAYS, "exiting..." );
     label_nolog_exit:
-    if( pirthread_started ) cthread_join(&pirthread);
 
     #ifdef _WIN32
         WSACleanup();

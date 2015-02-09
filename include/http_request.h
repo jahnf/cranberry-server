@@ -11,16 +11,16 @@
 #endif
 
 /* The following defines affect the buffer sizes and memory usage: */
-  /* Maxium total length (including \r\n) of each http header line */
+  /** Maxium total length (including \r\n) of each http header line */
   #define MAX_HTTP_HEADER_LINE           4096
-  /* Maximum length in kilobytes of a x-www-form-urlencoded field
+  /** Maximum length in kilobytes of a x-www-form-urlencoded field
    * of a post request. This means that for instance the text in a textarea
    * field in a post request can have the maximum size of 64 kilobytes */
   #define MAX_POST_FORM_FIELD_SIZE_KB	64
   /* TODO refactor & explain */
   #define MIN_POST_FORM_BUF_SIZE        2048
 
-/* Timeout in seconds when receiving data
+/** Timeout in seconds when receiving data,
  * TODO This should be a setting */
 #define REQUEST_RECV_TIMEOUT		    10
 
@@ -40,38 +40,38 @@ enum _REQUEST_READ_RETURNS {
     RRT_MISSING_CONTENT_LENGTH,
     RRT_MALFORMED_REQUEST,
     RRT_ALLOCATION_ERROR,
-    RRT_TE_NOT_SUPPORTED, // transfer encoding not supported
-    RRT_CT_NOT_SUPPORTED, // content type not supported
+    RRT_TE_NOT_SUPPORTED, /**< Transfer encoding not supported. */
+    RRT_CT_NOT_SUPPORTED, /**< Content type not supported. */
     RRT_UNKNOWN_ERR
 };
 
-/* flags for changing the the request handling */
+/** Flags for changing the the request handling */
 enum _REQUEST_READ_OPTION_FLAGS {
-    /* parse url for get vars */
+    /** Parse url for GET variables. */
     REQ_READ_FLAG_FILL_GET_VARS    = 1 << 0,
-    /* parse and fill post vars of application/x-www-form-urlencoded
-     * or multipart form data post requests */
+    /** Parse and fill POST variables of application/x-www-form-urlencoded
+     * or multi-part form data HTTP POST requests. */
     REQ_READ_FLAG_FILL_POST_VARS   = 1 << 1,
-    /* parse header info */
+    /** Parse header info. */
     REQ_READ_FLAG_FILL_HEADER_INFO = 1 << 2,
-    /* parse cookies, this implies REQ_READ_FLAG_FILL_HEADER_INFO */
+    /** Parse cookies, this implies REQ_READ_FLAG_FILL_HEADER_INFO. */
     REQ_READ_FLAG_FILL_COOKIES     = (1 << 3) | REQ_READ_FLAG_FILL_HEADER_INFO,
-    /* all of the above */
+    /** All options flags enabled. */
     REQ_FILL_ALL = REQ_READ_FLAG_FILL_GET_VARS | REQ_READ_FLAG_FILL_HEADER_INFO |
                     REQ_READ_FLAG_FILL_POST_VARS | REQ_READ_FLAG_FILL_COOKIES
 };
 
-/* http request methods
+/** HTTP request methods
  * - see also http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9 */
 enum _HTTP_REQUEST_METHODS {
-    REQ_METHOD_UNKNOWN = 0,
-    REQUEST_GET,
-    REQUEST_POST,
-    REQUEST_HEAD,   /* TODO support HEAD REQUESTS */
-    REQUEST_PUT,    /* not supported (yet) */
-    REQUEST_DELETE, /* not supported (yet) */
-    REQUEST_LINK,   /* not supported (yet) */
-    REQUEST_UNLINK  /* not supported (yet) */
+    REQ_METHOD_UNKNOWN = 0, /**< UNKNOWN request. */
+    REQUEST_GET,            /**< GET request. */
+    REQUEST_POST,           /**< POST request. */
+    REQUEST_HEAD,           /**< TODO support HEAD REQUESTS */
+    REQUEST_PUT,            /**< Not supported (yet) */
+    REQUEST_DELETE,         /**< Not supported (yet) */
+    REQUEST_LINK,           /**< Not supported (yet) */
+    REQUEST_UNLINK          /**< Not supported (yet) */
 };
 
 enum __SSSCRIPTING_TYPES {
@@ -79,27 +79,27 @@ enum __SSSCRIPTING_TYPES {
     SSS_LUA = 1
 };
 
-/* flags for mimetypes */
+/** Flags for MIME types. */
 enum _MIMETYPE_FLAGS {
     MIMETYPE_FLAG_NONE = 0,
-    /* hint that data with this mimetype is usually good compressable */
+    /** Hint that data with this mime-type is usually good compressible. */
     MIMETYPE_FLAG_COMPRESSABLE = 1 << 0
 };
 
-/* content types of http post requests */
+/** Content types of HTTP post requests. */
 enum _HTTP_POST_CONTENT_TYPES {
     REQ_POST_CONTENT_TYPE_UNKNOWN = 0,
-    /* post data is x-www-form-urlencoded
-     * - see also http://en.wikipedia.org/wiki/Application/x-www-form-urlencoded*/
+    /** POST data is x-www-form-urlencoded
+     * - see also http://en.wikipedia.org/wiki/Application/x-www-form-urlencoded */
     REQ_POST_CONTENT_TYPE_X_WWW_FORM,
-    /* post data is multipart/form-data
+    /** POST data is multipart/form-data
      * - see also http://tools.ietf.org/html/rfc2388 */
     REQ_POST_CONTENT_TYPE_MULPART_FORM_DATA
 };
 
-/* flags for post request data */
+/** Flags for post request data */
 enum _REQUEST_POST_FLAGS {
-    REQ_POST_FLAG_TE_CHUNKED = 1 << 0  /* chunked transfer encoding */
+    REQ_POST_FLAG_TE_CHUNKED = 1 << 0  /**< Chunked transfer encoding. */
 };
 
 /** TODO describe postdata_t */
@@ -107,13 +107,12 @@ typedef struct {
     size_t content_length;
     size_t bytes_read;
     char *mulpart_boundary;
-    unsigned short content_type;	//one of _REQUEST_POST_CONTENT_TYPES
+    unsigned short content_type;	/**< one of _HTTP_POST_CONTENT_TYPES */
     unsigned flags;
 
     char *buf;                      /**< Pointer to buffer */
     unsigned int buflen;			/**< Size of buffer */
     unsigned int bufbytes;			/**< Number of bytes filled in buffer */
-
 } postdata_t;
 
 /** HTTP request info */
@@ -138,7 +137,7 @@ typedef struct {
 /** Free a http_req_info_t struct object */
 void free_req_info( http_req_info_t* req_info );
 
-/** Read a ht */
+/** Read a HTTP request. */
 http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int* err, char* getbuf, size_t buflen );
 int http_request_read_post_vars_urlencoded( const int fd, http_req_info_t* req_info );
 int http_request_recv_post_and_throw_away( const int fd, http_req_info_t* req_info, char* buf, size_t buflen );
