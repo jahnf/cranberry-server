@@ -1,34 +1,6 @@
-/** @file settings.c
- * Functionality to read the server settings from a config file.
- * Read an settings from a file, the following settings are supported 
- * (lines starting with # are optional)
- * some settings can be overwritten via command line options..
- *
- * [server]
- * # wwwroot= www root directory, none by default
- * # port= server port, 8181 default
- * # logfile = logfile, ~/cranberry-server.log by default
- * # loglevel_file = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) 
- *                    -  2 by default (warning)
- * # loglevel_console = 0 for off, 1-6 for log levels (always, error, warning, info, debug, verbose) 
- *                       -  1 by default (error)
- * # ipv6 = 1 or 0, 1 by default / enables or disables ipv6 support
- * # deflate = 0-9, 0 is off = default, 1-9 is compression level, 
- *                              while 1 is the fastest and 9 the best compression
- * # disable_embedded_res = 0 or 1, 0 by default
- *
- * # [scripting]
- * # enabled = 0 or 1,  1 by default
- * # error_output_socket = 1 or 0, 1 by default
- * # session_timeout = ..     1800 by default
- * # caching = 0 or 1, 0 by default
- * 
- * # [scripting_cache]  ; only used if scripting.caching = 1
- * # cache_tmpfile = 0 or 1, 1 by default (if scripting caching =1)
- * # cache_memory = 0 or 1, 0 by default
- * # cache_memory_limit_mb = [max cache size in mb], 10 by default
- * # cache_tmpfile_limit_mb = [max cache size in mb], 50 by default
- * 
+/** @addtogroup settings
+ * @{
+ * @file settings.c Source file. 
  */
 
 #include <string.h>
@@ -41,6 +13,7 @@
 #include "cfile.h"
 #include "log.h"
 
+/** Default port. */
 #define WEBSRV_PORT_DEFAULT 8181
 #define LUASP_SESSION_TIMEOUT_DEFAULT 1800
 #define SERVERLOG_DEFAULT "cranberry-server.log"
@@ -237,3 +210,4 @@ int settings_loadini(server_settings_t *pSettings, const char* filename, int Def
     return 1;
 }
 
+/** @} */

@@ -44,7 +44,8 @@
     #include "luasp.h"
 #endif
 #include "log.h"
-SETLOGMODULENAME("webthread")
+
+SETLOGMODULENAME("webthread");
 
 /* embedded resources */
 #include "cresource.h"
@@ -55,24 +56,24 @@ SETLOGMODULENAME("webthread")
 
 #define STR(x) #x
 
-typedef struct __s_reg_thread reg_thread_t;
-struct __s_reg_thread {
+typedef struct reg_thread_t reg_thread_t;
+struct reg_thread_t {
     c_thread thread_id;
     time_t start_time;
     reg_thread_t *next;
 };
 
-/* Server thread regitster struct */
-typedef struct __s_thread_register thread_register_t;
-struct __s_thread_register {
+/* Server thread register struct */
+typedef struct {
     c_mutex mutex_threadcount;
     unsigned long ulThreadCount;
     c_mutex mutex_threadlist;
     reg_thread_t *threads; // list of running threads
-};
+} thread_register_t;
 
 /* Server threads register initialization */
-void * webthread_init() {
+void * webthread_init()
+{
     thread_register_t* pThreadRegister =
             (thread_register_t*)malloc(sizeof(thread_register_t));
     pThreadRegister->threads = NULL;
@@ -83,7 +84,8 @@ void * webthread_init() {
 }
 
 /* Returns the number of running server threads */
-unsigned long webthread_count(void *init_data) {
+unsigned long webthread_count(void *init_data)
+{
     unsigned long c;
     thread_register_t* pWebThreadData = (thread_register_t*)init_data;
     cthread_mutex_lock( &pWebThreadData->mutex_threadcount );
@@ -93,7 +95,8 @@ unsigned long webthread_count(void *init_data) {
 }
 
 /* Server threads deinitialization */
-void webthread_free( void *init_data ) {
+void webthread_free( void *init_data )
+{
     unsigned int i; /* we want to be able to compile on non-C99 compilers */
     thread_register_t* pThreadRegister = (thread_register_t*)init_data;
     if( !pThreadRegister ) return;
@@ -116,7 +119,8 @@ void webthread_free( void *init_data ) {
 }
 
 /* Register a thread to the thread register */
-static void register_thread( thread_arg_t *args ) {
+static void register_thread( thread_arg_t *args )
+{
     thread_register_t* pThreadRegister = (thread_register_t*)args->pDataSrvThreads;
     reg_thread_t* pRegThread = (reg_thread_t*)malloc( sizeof(reg_thread_t) );
 
@@ -135,7 +139,8 @@ static void register_thread( thread_arg_t *args ) {
 }
 
 /* Unregister a thread from the thread register */
-static void unregister_thread( thread_arg_t *args ) {
+static void unregister_thread( thread_arg_t *args )
+{
     thread_register_t* pThreadRegister = (thread_register_t*)args->pDataSrvThreads;
     reg_thread_t *iter, *current, *prev = 0;
     c_thread self = cthread_self();
@@ -178,11 +183,11 @@ void free_thread_arg(thread_arg_t *arg)
 /* Server thread that handles a request */
 CTHREAD_RET webthread(CTHREAD_ARG data)
 {
-    char send_buffer[SENDBUF_SIZE];		/* Request send buffer memory */
+    char send_buffer[SENDBUF_SIZE];     /* Request send buffer memory */
     char small_string_buf[32];          /* Small string buffer */
 
-    send_buffer_t sendbuf;				/* send buffer object */
-    int ret_val = 0;					/* thread return value, 0 = SUCCESS */
+    send_buffer_t sendbuf;              /* send buffer object */
+    int ret_val = 0;                    /* thread return value, 0 = SUCCESS */
     int srv_cmd = 0;
 
     http_req_info_t *req_info = NULL;
@@ -386,7 +391,7 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
                     header = kvlist_new_item_push_front( HTTP_HEADER_CACHE_CONTROL,
                                        "max-age=" STR(STATIC_CACHE_AGE_MAX), header );
                     send_http_header( args->fd, HTTP_STATUS_OK, header, req_info->http_version );
-                    while (	(ret = (int)fread(send_buffer, 1, SENDBUF_SIZE, pFile)) ) {
+                    while ( (ret = (int)fread(send_buffer, 1, SENDBUF_SIZE, pFile)) ) {
                             ret = send( args->fd, send_buffer, ret, 0 );
                     }
                 }

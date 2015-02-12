@@ -1,3 +1,8 @@
+/** @addtogroup str_utils
+ * @{
+ * @file str_utils.c Source file. 
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -5,6 +10,7 @@
 #include "str_utils.h"
 #include "char_defines.h"
 
+/* url decoding map */
 static const unsigned short gsHexDecodeMapAscii[256] = {
     256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
     256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256,
@@ -30,14 +36,9 @@ static const unsigned short gsHexDecodeMapAscii[256] = {
     256, 256, 256, 256
 };
 
-
-/* url decoding functions from stringencoders sources by Nick Galbreath
- * https://code.google.com/p/stringencoders/
- */
-
-// decode url encoded strings, destination and source can be the same string
-size_t url_decode( char *dest, const char *src ) {
-
+/* decode url encoded strings, destination and source can be the same string */
+size_t url_decode( char *dest, const char *src )
+{
     unsigned short ch;
     const char *deststart = dest;
 
@@ -66,8 +67,8 @@ size_t url_decode( char *dest, const char *src ) {
     return (unsigned int) (dest-deststart);
 }
 
-size_t url_decode_l( char *dest, const char *src, const size_t slen ) {
-
+size_t url_decode_l( char *dest, const char *src, const size_t slen )
+{
     unsigned short ch;
     const char *deststart = dest;
     const char *src_end = src + slen;
@@ -99,7 +100,8 @@ size_t url_decode_l( char *dest, const char *src, const size_t slen ) {
     return (unsigned int) (dest-deststart);
 }
 
-stringlist_t * stringlist_new( const char *str ) {
+stringlist_t * stringlist_new( const char *str )
+{
     stringlist_t *sl = (stringlist_t*)malloc( sizeof(stringlist_t) );
     if( sl != NULL ) {
         sl->next = NULL;
@@ -113,7 +115,8 @@ stringlist_t * stringlist_new( const char *str ) {
     return sl;
 }
 
-stringlist_t * stringlist_back( stringlist_t *sl ) {
+stringlist_t * stringlist_back( stringlist_t *sl )
+{
     while( sl ) {
         if( !sl->next ) return sl;
         sl = sl->next;
@@ -121,13 +124,15 @@ stringlist_t * stringlist_back( stringlist_t *sl ) {
     return NULL;
 }
 
-stringlist_t * stringlist_push_front( stringlist_t *sl, const char *str ) {
+stringlist_t * stringlist_push_front( stringlist_t *sl, const char *str )
+{
     stringlist_t *sl_new = stringlist_new( str );
     sl_new->next = sl;
     return sl_new;
 }
 
-stringlist_t *stringlist_push_back( stringlist_t *sl, const char *str ) {
+stringlist_t *stringlist_push_back( stringlist_t *sl, const char *str )
+{
     stringlist_t *sl_new = stringlist_new( str );
     stringlist_t *sl_back = stringlist_back( sl );
     if( sl_back )
@@ -138,7 +143,8 @@ stringlist_t *stringlist_push_back( stringlist_t *sl, const char *str ) {
     return sl;
 }
 
-unsigned stringlist_len( const stringlist_t *sl ) {
+unsigned stringlist_len( const stringlist_t *sl )
+{
     unsigned c = 0;
     while( sl ) {
         ++c;
@@ -147,7 +153,8 @@ unsigned stringlist_len( const stringlist_t *sl ) {
     return c;
 }
 
-void stringlist_free( stringlist_t *sl ) {
+void stringlist_free( stringlist_t *sl )
+{
     stringlist_t *sl_tmp;
     while( sl ) {
         sl_tmp = sl;
@@ -241,3 +248,4 @@ void ulitoa10(unsigned long value, char* str)
 }
 */
 
+/** @} */

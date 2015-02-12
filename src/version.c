@@ -1,6 +1,5 @@
-/** @file version.c
- *	@author Jahn Fuchs
- */
+/** @file version.c */
+
 #include "version.h"
 
 #ifdef GITVERSION

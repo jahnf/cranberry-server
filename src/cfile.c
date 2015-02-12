@@ -1,3 +1,8 @@
+/** @addtogroup cfile
+ * @{
+ * @file cfile.c
+ */
+ 
 #ifdef _WIN32
     #include <windows.h>
 #else
@@ -119,7 +124,8 @@ void cfile_item_free( cfile_item_t *cf_item )
 }
 
 /** Create a new CFILE item and prepend it to a given item. */
-cfile_item_t * cfile_item_prepend( const char *name, cfile_item_t *parent, cfile_item_t *prependto ) 
+cfile_item_t * cfile_item_prepend( const char *name, cfile_item_t *parent, 
+                                     cfile_item_t *prependto )
 {
     cfile_item_t *item;
     if( (item = malloc( sizeof(cfile_item_t) )) ) {
@@ -299,7 +305,8 @@ cfile_item_t * cfile_list_dir( const char *path, cfile_item_t *parent )
                 case DT_LNK:    new_item->type = CFILE_TYPE_LINK; break;
                 case DT_REG:    new_item->type = CFILE_TYPE_REGULAR; break;
                 default:
-                    new_item->type = CFILE_TYPE_UNKNOWN; /* a file type we dont support */
+                    /* a file type we dont support */
+                    new_item->type = CFILE_TYPE_UNKNOWN;
                     break;
                 }
                 /* Read in basic file attributes. */
@@ -330,7 +337,8 @@ cfile_item_t * cfile_list_dir( const char *path, cfile_item_t *parent )
                                     new_item->type = CFILE_TYPE_REGULAR;
                             }
                         }
-                        if( new_item->type == CFILE_TYPE_REGULAR || new_item->type == CFILE_TYPE_LNKFILE ) {
+                        if( new_item->type == CFILE_TYPE_REGULAR 
+                            || new_item->type == CFILE_TYPE_LNKFILE ) {
                             new_item->size = fattr.st_size;
                         }
                     }
@@ -365,7 +373,7 @@ cfile_item_t * cfile_get_drives()
             }
             i+=strlen( &buf[i] );
         }
-    #else /* linux ...*/
+    #else /* Linux/Posix ...*/
         struct stat fattr;
         if( 0 == stat( "/", &fattr ) ) {
             new_list = cfile_item_new( "/", NULL );
@@ -376,3 +384,5 @@ cfile_item_t * cfile_get_drives()
 
     return new_list;
 }
+
+/** @} */

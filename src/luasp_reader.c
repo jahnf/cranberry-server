@@ -2,7 +2,7 @@
 
 #include "config.h"
 #if LUA_SUPPORT
-#include "luasp_types.h"
+#include "luasp_reader.h"
 
 #include <lua.h>
 #include <string.h>
@@ -35,7 +35,8 @@ static const unsigned char lsp_char_lookup[256] = {
 };
 
 /* add a character to the lua buffer when inside an echo call... */
-inline static void _lsp_add_char( luasp_state_t *lst, const int ch ) {
+inline static void _lsp_add_char( luasp_state_t *lst, const int ch )
+{
     switch( lsp_char_lookup[ch] ) {
         case 0x00:
             lst->buf[lst->buf_offset++]=ch;
@@ -56,28 +57,32 @@ inline static void _lsp_add_char( luasp_state_t *lst, const int ch ) {
 }
 
 /* start an echo output in lua buffer*/
-inline static void _lsp_beg_echo( luasp_state_t *lst ) {
+inline static void _lsp_beg_echo( luasp_state_t *lst )
+{
     static const char echo_start[]="echo('";
     strncpy( (char*)lst->buf+lst->buf_offset, echo_start, sizeof(echo_start)-1 );
     lst->buf_offset += (sizeof(echo_start)-1);
 }
 
 /* end an echo output in lua buffer */
-inline static void _lsp_end_echo( luasp_state_t *lst ) {
+inline static void _lsp_end_echo( luasp_state_t *lst )
+{
     static const char echo_end[]="')";
     strncpy( (char*)lst->buf+lst->buf_offset, echo_end, sizeof(echo_end)-1 );
     lst->buf_offset += (sizeof(echo_end)-1);
 }
 
 /* start an echo output of lua variables ( when '<?=' appears ) */
-inline static void _lsp_beg_var_echo( luasp_state_t *lst ) {
+inline static void _lsp_beg_var_echo( luasp_state_t *lst )
+{
     static const char echo_start[]="echo(";
     strncpy( (char*)lst->buf+lst->buf_offset, echo_start, sizeof(echo_start)-1 );
     lst->buf_offset += (sizeof(echo_start)-1);
 }
 
 /* end lua variable echo */
-inline static void _lsp_end_var_echo( luasp_state_t *lst ) {
+inline static void _lsp_end_var_echo( luasp_state_t *lst )
+{
     lst->buf[lst->buf_offset++]=')';
 }
 
@@ -85,8 +90,8 @@ inline static void _lsp_end_var_echo( luasp_state_t *lst ) {
  * fills buffer with lua code and returns..
  * every code not within code tags <? ?> is replaced and printed
  * out with an 'echo' call. */
-const char* luasp_reader_file( lua_State* L , void *ud, size_t* size ) {
-
+const char* luasp_reader_file( lua_State* L , void *ud, size_t* size )
+{
     luasp_state_t *lst = ud; /* user data */
     int ch;
     #ifndef LUASP_LEAVE_LF_UNTOUCHED
@@ -98,7 +103,7 @@ const char* luasp_reader_file( lua_State* L , void *ud, size_t* size ) {
     while( lst->buf_offset < LUASP_BUFLEN ) {
 
         ch = fgetc( lst->fp );
-        if( ch==EOF )	{
+        if( ch==EOF )   {
             switch(lst->st)
             {
             case LST_UNDEFINED:
@@ -269,7 +274,8 @@ const char* luasp_reader_file( lua_State* L , void *ud, size_t* size ) {
     return (const char*) lst->buf;
 }
 
-const char* luasp_reader_res( lua_State* L , void *ud, size_t* size ) {
+const char* luasp_reader_res( lua_State* L , void *ud, size_t* size )
+{
     luasp_state_t *lst = ud;
     int ch;
     #ifndef LUASP_LEAVE_LF_UNTOUCHED
@@ -451,6 +457,5 @@ const char* luasp_reader_res( lua_State* L , void *ud, size_t* size ) {
     *size = lst->buf_offset;
     return (const char*) lst->buf;
 }
-
 
 #endif  /* LUA_SUPPORT */

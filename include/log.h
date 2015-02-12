@@ -1,5 +1,7 @@
-/** author Jahn Fuchs
- * @file log.h
+#ifndef LOG_H_
+#define LOG_H_
+
+/** @defgroup logging Logging
  * Logging module for logging to console and/or a file with support
  * for different logging levels.
  *
@@ -8,60 +10,69 @@
  * The logging macros then are empty and no overhead is produced.
  *
  * How to use logging:
- * - #include "log.h"
+ * - `#include "log.h"`
  * - Set the logging module name by using one of the following macros
- *   SETLOGMODULENAME(name) or SETDEFAULTLOGMODULENAME()
- *   Example 1 - sets the logging module name to "myModule":
- *    SETLOGFILENAME("myModule");
- *   Example 2 - if __FILE__ is /home/dev/module.c the following
- *    sets the logging module name to 'module.c'
- *    SETDEFAULTLOGMODULENAME();
+ *   `SETLOGMODULENAME(name)` or `SETDEFAULTLOGMODULENAME()`.
+ *   - __Example 1__: Sets the logging module name to `"myModule"`:
+ *    `SETLOGFILENAME("myModule");`
+ *   - __Example 2__: If `__FILE__` is `/home/dev/module.c` the following
+ *    sets the logging module name to `'module.c'`: 
+ *    `SETDEFAULTLOGMODULENAME();`
  *
- * - logging has to be initialized with a call to log_init() first
- *   (and later uninitialized with a call to log_uninit())
- *   before logging can be used. Do this first in your application
- *   initialization
+ * - Logging has to be initialized with a call to `log_init()` first
+ *   (and later de-initialized with a call to `log_uninit()`)  
+ *   before logging can be used. 
  *
- * - after this the following macros can be used in your code:
+ * - After this the following macros can be used in your code:
+ *   - `LOG(log_level, format_string, ...)`
+ *     - Logs to console and file with the specified `log_level`.
+ *     - Works like printf: __Example__: 
+ *       - `LOG(log_ERROR, "Cannot find index %i", index);`
  *
- *   LOG(loglevel, format_string, ...) :
- *      logs to console and file with the specified loglevel.
- *      works like printf: example: LOG(log_ERROR, "Cannot find index %i", index);
+ *   - `LOG_CONSOLE(log_level, format_string, ...)`:
+ *     - Logs to console only with the specified `log_level`.
  *
- *   LOG_CONSOLE(loglevel, format_string, ...) :
- *      logs to console only with the specified loglevel.
+ *   - `LOG_FILE(log_level, ...)`:
+ *     - Logs to file only with the specified `log_level`.
  *
- *   LOG_FILE(loglevel, ...):
- *      logs to file only with the specified loglevel.
- *
- *
+ * @{
+ * @file log.h Header file.
  */
-
-#ifndef LOG_H_
-#define LOG_H_
 
 #include "config.h"
 
+/** Log levels. */
 enum {
-    log_DISABLED = 0,
-    log_ALWAYS   = 1,
-    log_ERROR    = 2,
-    log_WARNING  = 3,
-    log_INFO     = 4,
-    log_DEBUG    = 5,
-    log_VERBOSE  = 6
+    log_DISABLED = 0, /*!< Logging disabled. */
+    log_ALWAYS   = 1, /*!< Always level. */
+    log_ERROR    = 2, /*!< Error level. */
+    log_WARNING  = 3, /*!< Warning level. */
+    log_INFO     = 4, /*!< Info level. */
+    log_DEBUG    = 5, /*!< Debug level. */
+    log_VERBOSE  = 6  /*!< Verbose level. */
 };
 
 /** Initialize logging. */
 int log_init( const char *file, int loglevel_file, int loglevel_console );
-/** Deinitialize logging. */
+
+/** De-initialize logging. */
 void log_deinitialize();
 
-/** Set the log levels. */
+/** Set the log levels for file and console. */
 void log_setlevel( int loglevel_file, int loglevel_console );
 
 #if !LOGGING
+    /* If logging is disabled at compile time, set log macros to 
+     * empty defines -> will replace log statements with noop in code 
+     * Doxygen will only detect the documentation here. */
+
+    /** Logs to console and file with the specified `loglevel`.
+     * Works like printf: __Example__: 
+     * - `LOG(log_ERROR, "Cannot find index %i", index);` */
     #define LOG(loglevel, ...)
+    /** Logs to console and file with the specified log levels for file and console.
+     * Works like printf: __Example__: 
+     * - `LOG(log_WARNING, log_ERROR, "Cannot find index %i", index);` */
     #define LOG2(loglvl, loglvl_cons, ...)
     #define LOG_CONSOLE(loglevel, ...)
     #define LOG_FILE(loglevel, ...)
@@ -97,18 +108,18 @@ void log_setlevel( int loglevel_file, int loglevel_console );
     #define LOG_FILE(loglevel, ...) write_log_file(loglevel,_log_getname(),__LINE__, __VA_ARGS__)
 #endif
 
-
-/* log functions */
-/* logs to file and console */
+/** Logs to file and console with different log levels. */
 void write_log( int loglevel_file, int loglevel_console,
                   const char* filename, const unsigned long line, const char* format, ...);
 
-/* only log to file */
+/** Log to file. */
 void write_log_file( int loglevel_file, const char* filename,
                         const unsigned long line, const char* format, ...);
 
-/* only logs to console */
+/** Log to console */
 void write_log_console( int loglevel_console, const char* filename,
                            const unsigned long line, const char* format, ...);
 
+/** @} */                           
+                           
 #endif /* LOG_H_ */

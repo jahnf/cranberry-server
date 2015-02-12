@@ -1,21 +1,23 @@
 #ifndef KV_ITER_H__
 #define KV_ITER_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <string.h>
-/**
- * Query string key value pair iterator.  Uses no heap, makes no copy and makes
- *  no modification of input.  Example usage:
+/** @defgroup kviter Key/Value String Iterator
+ * Parse C-strings for key/value pairs - for example in 
+ * HTTP GET-requests. Uses no heap, makes no copy and does not 
+ * make  modification on the input data.  
+ * 
+ * Example usage:
  *
+ * @code{.c}
  * kviter_t kvi;
  * const char* qs = "foo=bar&ding=bar";
  * kviter_reset( &kvi, '&', '=', qs, strlen(qs) );
- * while (kviter_next(&kvi)) {
- *    // we only get start and length of key and value
- *    // the rest is up to the user
+ * 
+ * // Iterate over all key/value's in qs
+ * while (kviter_next(&kvi)) 
+ * {
+ *    // we only get start and length of key and value 
+ *    // - the rest is up to the user
  *
  *    char* key = (char*) malloc(kvi.keylen + 1);
  *    key[kvi.keylen] = '\0';
@@ -27,12 +29,21 @@ extern "C" {
  *    free(key);
  *    free(value);
  * }
+ * @endcode
  *
- *
+ * @{
+ * @file kv_iter.h Header file. 
  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <string.h>
+/** Key-Value iterator struct. */
 typedef struct {
-	char key_sep;
-	char val_sep;
+	char key_sep;   /*!< Key separator character. */
+	char val_sep;   /*!< Value separator character. */
 
     const char* s;
     size_t pos;
@@ -47,9 +58,9 @@ typedef struct {
 
 
 /**
- * Reset a kviter to an initial start (constructor)
+ * Reset an iterator to an initial start (constructor).
  *
- * This does not modifiy the original string, nor makes a copy.
+ * This does not modify the original string, nor makes a copy.
  *
  * \param[out] kvi data struct used in iterator
  * \param[in] key_sep key separator character
@@ -69,10 +80,21 @@ void kviter_reset( kviter_t* kvi,
  * \return true if found a key value pair, false if no more data
  */
 int kviter_next( kviter_t* kvi );
+
+/**
+ * Get next key/value pair in query string
+ *
+ * \param[out] kvi data struct
+ * \param[in] ignore_leading_char Ignore character c in at the beginning of key values.
+ * \param[in] c Character to ignore if ignore_leading_char is != 0.
+ * \return true if found a key value pair, false if no more data
+ */
 int kviter_next_i( kviter_t* kvi, int ignore_leading_char, char c );
 
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */
 
 #endif  /* KV_ITER_H__ */

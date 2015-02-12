@@ -59,7 +59,7 @@
 SETLOGMODULENAME("main");
 
 #define THREAD_STACK_SIZE 512000
-#define DEFAULT_CONFIG_FILE "mws.ini"
+#define DEFAULT_CONFIG_FILE "cranberry-server.ini"
 
 /* Local globals */
 static int main_exit_code = EXIT_SUCCESS; /* Return value of main program */
@@ -71,7 +71,8 @@ static int exit_sig_caught=  0;           /* Set to 1 if a signal was caught */
 static void server_deinitialize( thread_arg_t *args );
 
 /* exit signal handler */
-void exit_signal_handler( int sig ) {
+void exit_signal_handler( int sig )
+{
     printf("\n--\nSignal %d caught...\n", sig);
     main_loop = 0;
     exit_sig_caught = 1;
@@ -134,7 +135,7 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
     }
 
     /* load settings from config file */
-    // TODO settings_loadini needs more return values, for different errors..
+    /* TODO settings_loadini needs more return values, for different errors.. */
     if( !config_file ) settings_loadini( pSettings, DEFAULT_CONFIG_FILE, 1 );
     else if( !settings_loadini( pSettings, config_file, 0) ) {
         fprintf( stderr, "error while reading config file '%s'\n", config_file );
@@ -362,8 +363,8 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
     return;
 }
 
-static void server_deinitialize( thread_arg_t *args ) {
-
+static void server_deinitialize( thread_arg_t *args )
+{
     if( args == NULL ) return;
 
     webthread_free( args->pDataSrvThreads );

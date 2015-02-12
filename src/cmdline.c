@@ -1,6 +1,6 @@
-/** @file cmdline.c
- *	@author Jahn Fuchs
- */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -8,24 +8,15 @@
 #include "settings.h"
 #include "log.h"
 #include "version.h"
+#include "cfile.h"
 
 #if LUA_SUPPORT
 #include <lua.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef _WIN32
-	#define DIR_SEPERATOR  '\\'
-#else
-	#define DIR_SEPERATOR  '/'
-#endif
-
 /* Print help to console */
-void cmdline_print_help( const char *name, const int detail ) {
-
+void cmdline_print_help( const char *name, const int detail )
+{
 	printf( "%s (%s", name, get_version_string());
 
 	switch( get_build_type() ) {
@@ -103,8 +94,8 @@ void cmdline_print_help( const char *name, const int detail ) {
 			"   Example: %s -p 8181 &\n\n", name);
 }
 
-int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** config_file ) {
-
+int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** config_file )
+{
 	server_settings_t *pSettings = args->pSettings;
 	int i=1, err=CMDLINE_OKAY;
 
@@ -136,9 +127,9 @@ int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** conf
 					free( pSettings->wwwroot );
 				if( (pSettings->wwwroot  = malloc( strlen(argv[i]) + 2 )) ) {
 					strcpy( pSettings->wwwroot, argv[i] );
-					if( pSettings->wwwroot[strlen(argv[i])-1] != DIR_SEPERATOR) {
+					if( pSettings->wwwroot[strlen(argv[i])-1] != DIR_SEP) {
 						pSettings->wwwroot[strlen(argv[i])+1] = '\0';
-						pSettings->wwwroot[strlen(argv[i])] = DIR_SEPERATOR;
+						pSettings->wwwroot[strlen(argv[i])] = DIR_SEP;
 					}
 				}
 			}

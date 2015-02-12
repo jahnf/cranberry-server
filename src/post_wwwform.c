@@ -5,7 +5,6 @@
  */
 
 #include <string.h>
-/*#include <stdio.h>*/
 
 #define HTTP_REQUEST_IMPL_
 #include "http_request.h"

@@ -12,9 +12,9 @@ SETLOGMODULENAME("ip_socket_utils");
  */
 int server_getaddrinfo( thread_arg_t *args,
         int *v4avail, struct sockaddr_in *addrv4,
-        int *v6avail, struct sockaddr_in6 *addrv6 ) {
-
-    struct addrinfo hints = {0};	/* init struct */
+        int *v6avail, struct sockaddr_in6 *addrv6 )
+{
+    struct addrinfo hints = {0};    /* init struct */
     struct addrinfo *ai, *ai_loop, *aiv4 = NULL, *aiv6 = NULL;
     char portstr[32];
     int gaierr;
@@ -59,7 +59,8 @@ int server_getaddrinfo( thread_arg_t *args,
 
 /* MS Windows specific stuff */
 #ifdef _WIN32
-const char *inet_ntop_w32(int af, const void *src, char *dst, socklen_t cnt, const void *in_sa )
+const char *inet_ntop_w32( int af, const void *src, 
+                           char *dst, socklen_t cnt, const void *in_sa )
 {
     if( in_sa != NULL ) {
         if( af == AF_INET )

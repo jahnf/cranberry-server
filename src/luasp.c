@@ -106,7 +106,8 @@ typedef struct {
 } luasp_idata_t;
 
 /* init and free functions. later used to init cache and other things.. */
-void * luasp_init( thread_arg_t *args ) {
+void * luasp_init( thread_arg_t *args )
+{
     //const WebSrvSettings *pSettings = args->pSettings;
     luasp_idata_t *data = malloc(sizeof(luasp_idata_t));
 
@@ -152,7 +153,8 @@ void * luasp_init( thread_arg_t *args ) {
     return data;
 }
 
-void luasp_free( void *data_in ) {
+void luasp_free( void *data_in )
+{
     luasp_idata_t *data = data_in;
     if( data == NULL ) return;
 
@@ -162,7 +164,8 @@ void luasp_free( void *data_in ) {
 
 /* send http headers, if the content-type field ist not set
  * the function uses the default text/html content type */
-static void _lsp_send_headers( luasp_page_state_t *es ) {
+static void _lsp_send_headers( luasp_page_state_t *es )
+{
     if( !es->headers )
         send_buffer_simple_http_header( es->args->sendbuf, es->http_status_code,
                                         HTTP_CONTENT_TYPE_HTML, es->ri->http_version );
@@ -170,7 +173,8 @@ static void _lsp_send_headers( luasp_page_state_t *es ) {
         kv_item *content_type = kvlist_find_key( HTTP_HEADER_CONTENT_TYPE, es->headers );
         /* if no content-type header was set use default html content type */
         if( !content_type )
-            es->headers = kvlist_new_item_push_front( HTTP_HEADER_CONTENT_TYPE, HTTP_CONTENT_TYPE_HTML, es->headers );
+            es->headers = kvlist_new_item_push_front( HTTP_HEADER_CONTENT_TYPE, 
+                                                      HTTP_CONTENT_TYPE_HTML, es->headers );
         send_buffer_http_header( es->args->sendbuf, es->http_status_code,
                                  es->headers, es->ri->http_version );
     }
@@ -179,7 +183,7 @@ static void _lsp_send_headers( luasp_page_state_t *es ) {
 
 
 /* C implementation of the luasp echo/write function */
-static int lsp_echo( lua_State *L ) 
+static int lsp_echo( lua_State *L )
 {
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
@@ -206,7 +210,7 @@ static int lsp_echo( lua_State *L )
 }
 
 /* C implementation of the luasp http_response code function */
-static int lsp_http_response_code( lua_State *L ) 
+static int lsp_http_response_code( lua_State *L )
 {
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
@@ -222,7 +226,7 @@ static int lsp_http_response_code( lua_State *L )
 }
 
 /* C implementation of the luasp http_header function */
-static int lsp_http_header( lua_State *L ) 
+static int lsp_http_header( lua_State *L )
 {
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
@@ -273,7 +277,8 @@ static int lsp_http_header( lua_State *L )
  * the Lua state with informations from the HTTP request 
  * and with general web server settings. */
 inline
-static void _fill_environment( lua_State *L, const http_req_info_t *ri, const thread_arg_t *args )
+static void _fill_environment( lua_State *L, const http_req_info_t *ri, 
+                               const thread_arg_t *args )
 {
     const server_settings_t *pSettings = args->pSettings;
     kv_item *iter;
@@ -338,7 +343,8 @@ static void _fill_environment( lua_State *L, const http_req_info_t *ri, const th
 
 /* Register Lua functions in a given Lua state */
 inline
-static void _luasp_regfuncs( lua_State *L ) {
+static void _luasp_regfuncs( lua_State *L )
+{
     lua_register( L, "echo", lsp_echo );
     lua_register( L, "write", lsp_echo );
     lua_register( L, "http_response_code", lsp_http_response_code );
@@ -349,7 +355,7 @@ static void _luasp_regfuncs( lua_State *L ) {
 }
 
 #if SQLITE_SUPPORT
-#define LUA_SQLITELIBNAME	"sqlite3"
+#define LUA_SQLITELIBNAME   "sqlite3"
 LUAMOD_API int (luaopen_lsqlite3) (lua_State *L);
 #endif
 
@@ -394,7 +400,7 @@ inline static void _luasp_openlibs( lua_State *L )
 }
 
 inline
-static kv_item * _push_cache_control_headers_front( kv_item *headers ) 
+static kv_item * _push_cache_control_headers_front( kv_item *headers )
 {
     static const char cc_value[] = "no-store, no-cache, must-revalidate, "
                                    "post-check=0, pre-check=0";
@@ -409,7 +415,7 @@ static kv_item * _push_cache_control_headers_front( kv_item *headers )
     return headers;
 }
 
-int luasp_process( http_req_info_t *ri, thread_arg_t *args ) 
+int luasp_process( http_req_info_t *ri, thread_arg_t *args )
 {
     server_settings_t* pSettings = args->pSettings;
     luasp_state_t lst = {0,0,0,0,LST_INIT,1,0};
@@ -452,7 +458,7 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args )
         if( ri->http_version == HTTP_VERSION_1_1 ) args->sendbuf->flags |= SBF_CHUNKED;
 
         /* Create a new Lua state */
-        if(	(L = luaL_newstate()) == NULL ) {
+        if( (L = luaL_newstate()) == NULL ) {
             /* memory allocation error */
             send_buffer_error_info( args->sendbuf, ri->filename, 
                                     HTTP_STATUS_INTERNAL_SERVER_ERROR, ri->http_version );
@@ -460,7 +466,7 @@ int luasp_process( http_req_info_t *ri, thread_arg_t *args )
         }
 
         /* call lua load function */
-        #if LUA_VERSION_NUM	>= 502
+        #if LUA_VERSION_NUM >= 502
             status = lua_load( L, luasp_reader_func, &lst, ri->filename, NULL );
         #else
             status = lua_load( L, luasp_reader_func, &lst, ri->filename );

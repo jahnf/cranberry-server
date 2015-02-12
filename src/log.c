@@ -1,10 +1,6 @@
-/** @file log.c
- *	@author Jahn Fuchs
- *
- * This module can be compiled completely without logging.
- *  For this LOGGING=0 has to be defined for log.c and all
- *  files that use log.h
- *
+/** @addtogroup logging
+ * @{
+ * @file log.c Source file. 
  */
 
 #include "log.h"
@@ -43,8 +39,7 @@
 #define LOGGING_LOG_LEVELSTRING_FILE     1
 #define LOGGING_LOG_LEVELSTRING_CONSOLE  1
 
-// ----------------------- local globals
-
+/** Internally used settings struct. */
 typedef struct {
     int initialized;
 
@@ -65,12 +60,12 @@ static const struct {
     int ikey;
 } _log_levels[] = {
     { NULL, 0 },
-    { "always ",        log_ALWAYS },
-    { "error  ",		log_ERROR },
-    { "warning",		log_WARNING},
-    { "info   ",		log_INFO },
-    { "debug  ",		log_DEBUG },
-    { "verbose",		log_VERBOSE },
+    { "always ", log_ALWAYS },
+    { "error  ", log_ERROR },
+    { "warning", log_WARNING},
+    { "info   ", log_INFO },
+    { "debug  ", log_DEBUG },
+    { "verbose", log_VERBOSE },
     { NULL, 0 }
 };
 #endif
@@ -144,8 +139,9 @@ static void _log_to_file(log_settings_t *pLogSettings, const char* type, const c
 #endif
 }
 
-static void _log_to_console( log_settings_t *pLogSettings, const int loglevel, const char* type, const char *filename,
-                        const unsigned long line, const char* format, va_list args )
+static void _log_to_console( log_settings_t *pLogSettings, const int loglevel, 
+                             const char* type, const char *filename,
+                             const unsigned long line, const char* format, va_list args )
 {
 #if LOGGING
     FILE *output = stdout;
@@ -198,7 +194,7 @@ void write_log_file( int loglevel_file, const char* filename, const unsigned lon
     va_list args;
 
     if( !LogSettings.initialized ) {
-        fprintf( stderr, "warning: uninitialized logging\n");
+        fprintf( stderr, "ERROR: Logging is not initialized.\n");
         return;
     }
 
@@ -217,11 +213,11 @@ void write_log( int loglevel_file, int loglevel_console,
     va_list args;
 
     if( !LogSettings.initialized ) {
-        fprintf( stderr, "warning: uninitialized logging\n");
+        fprintf( stderr, "ERROR: Logging is not initialized.\n");
         return;
     }
 
-    if( !(loglevel_console > LogSettings.loglevel_console) )	{
+    if( !(loglevel_console > LogSettings.loglevel_console) ) {
         if( loglevel_console > log_VERBOSE ) loglevel_console = log_VERBOSE;
         va_start (args, format);
         _log_to_console( &LogSettings, loglevel_console, _log_levels[loglevel_console].str, filename, line, format, args );
@@ -332,3 +328,5 @@ void log_deinitialize()
 #endif
 #endif
 #endif
+
+/** @} */

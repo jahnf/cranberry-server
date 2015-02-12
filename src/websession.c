@@ -14,7 +14,7 @@
 #include "websession.h"
 #include "log.h"
 
-SETLOGMODULENAME("websession")
+SETLOGMODULENAME("websession");
 
 typedef struct session_data_item_s session_data_item_t;
 struct session_data_item_s {
@@ -27,10 +27,10 @@ struct session_data_item_s {
 /* web session internal struct */
 typedef struct _websession_internal_s websession_int_t;
 struct _websession_internal_s {
-    unsigned secret;                    // secret session number
-    time_t valid_until;                 // time until session is valid, if not updated
+    unsigned secret;                    /* secret session number */
+    time_t valid_until;                 /* time until session is valid, if not updated */
     c_mutex data_mutex;
-    session_data_item_t *session_data;  // list of registered session data
+    session_data_item_t *session_data;  /* list of registered session data */
     websession_int_t *next;
 };
 
@@ -39,12 +39,13 @@ typedef struct {
     unsigned cleanup_counter;
 	c_rwlock sess_lock;
 	c_mutex sess_del_mutex;
-    websession_int_t *sess_list;    // pointer to first session
-    websession_int_t *sess_deleted; // pointer to first del session
+    websession_int_t *sess_list;    /* pointer to first session */
+    websession_int_t *sess_deleted; /* pointer to first del session */
 } websession_register_t;
 
 /**/
-static void ** _ws_get_data(session_data_item_t *beg, const int id) {
+static void ** _ws_get_data(session_data_item_t *beg, const int id)
+{
     session_data_item_t *it = beg;
     for( ; it; it = it->next ) {
         if( id == it->id )
@@ -60,14 +61,14 @@ void ** websession_register_data(session_t *session, const int id, void *data,
         websession_int_t *ref = session->ref;
         void **return_value = NULL;
         cthread_mutex_lock( &ref->data_mutex );
-        // if id not yet registered
+        /* if id not yet registered */
         if( !_ws_get_data(ref->session_data, id) ) {
             session_data_item_t *data_item = malloc(sizeof(session_data_item_t));
             if( data_item ) {
                 data_item->id = id;
                 data_item->data = data;
                 data_item->free_function = free_fun;
-                // add to beginning of list
+                /* add to beginning of list */
                 data_item->next = ref->session_data;
                 ref->session_data = data_item;
                 return_value = &data_item->data;
@@ -87,13 +88,13 @@ void websession_unregister_data(session_t *session, const int id)
         cthread_mutex_lock( &ref->data_mutex );
         for( it = ref->session_data; it; prev = it, it = it->next ) {
             if( id == it->id ) {
-                // remove from list
+                /* remove from list */
                 if( prev == NULL )
                     ref->session_data = it->next;
                 else
                     prev->next = it->next;
                 cthread_mutex_unlock( &ref->data_mutex );
-                // and free
+                /* and free */
                 if( it->data && it->free_function )
                     it->free_function(it->data);
                 free( it );
@@ -125,23 +126,23 @@ static void _websession_session_data_list_free( session_data_item_t* session_dat
     }
 }
 
-static void _websession_session_cleanup( websession_register_t *sess_settings, time_t time ) {
-
+static void _websession_session_cleanup( websession_register_t *sess_settings, time_t time )
+{
     websession_int_t *ws_prev = NULL, *ws_tmp;
     cthread_rwlock_write_wait( &sess_settings->sess_lock );
     ws_tmp = sess_settings->sess_list;
     while( ws_tmp ) {
         if( ws_tmp->valid_until < time ) {
-            // remove from session list
+            /* remove from session list */
             if( ws_prev ) ws_prev->next = ws_tmp->next;
             else sess_settings->sess_list = ws_tmp->next;
-            // put into deleted list
+            /* put into deleted list */
             cthread_mutex_lock( &sess_settings->sess_del_mutex );
             ws_tmp->next = sess_settings->sess_deleted;
             sess_settings->sess_deleted = ws_tmp;
-            ws_tmp->valid_until += 1200; // live some more time in deleted list
+            ws_tmp->valid_until += 1200; /* live some more time in deleted list */
             cthread_mutex_unlock( &sess_settings->sess_del_mutex );
-            // adjust pointers
+            /* adjust pointers */
             if( ws_prev ) ws_tmp =  ws_prev->next;
             else ws_tmp = sess_settings->sess_list;
         } else {
@@ -156,13 +157,13 @@ static void _websession_session_cleanup( websession_register_t *sess_settings, t
     ws_prev = NULL;
     while( ws_tmp ) {
         if( ws_tmp->valid_until < time ) {
-            // remove from deleted session list
+            /* remove from deleted session list */
             if( ws_prev ) ws_prev->next = ws_tmp->next;
             else sess_settings->sess_deleted = ws_tmp->next;
-            // free memory
+            /* free memory */
             _websession_session_data_list_free( ws_tmp->session_data );
             free( ws_tmp );
-            // adjust pointers
+            /* adjust pointers */
             if( ws_prev ) ws_tmp =  ws_prev->next;
             else ws_tmp = sess_settings->sess_list;
         } else {
@@ -174,8 +175,9 @@ static void _websession_session_cleanup( websession_register_t *sess_settings, t
     cthread_mutex_unlock( &sess_settings->sess_del_mutex );
 }
 
-// initialize web session register (e.g. mutexes) ..
-void * websession_init() {
+/* initialize web session register (e.g. mutexes) .. */
+void * websession_init()
+{
     websession_register_t *session_register = malloc( sizeof(websession_register_t) );
     session_register->cleanup_counter = 0;
     session_register->sess_deleted = NULL;
@@ -185,10 +187,9 @@ void * websession_init() {
     return session_register;
 }
 
-// free web session register
-void websession_free( void *data ) {
-
-	//size_t num = 0, num2 = 0;
+/* free web session register */
+void websession_free( void *data )
+{
     websession_register_t *sess_settings = data;
     websession_int_t *ws_tmp;
 	if( !sess_settings ) return;
@@ -214,8 +215,8 @@ void websession_free( void *data ) {
 }
 
 /* destroy a websession, i.e. make it invalid */
-int websession_destroy(void *data, session_t *session ) {
-
+int websession_destroy(void *data, session_t *session )
+{
 	if( data == NULL ) return 0;
 
     if( session != NULL && session->ref != NULL ) {

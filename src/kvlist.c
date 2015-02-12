@@ -1,11 +1,13 @@
-/* C-Style key/value item and list handling. */
+/** @addtogroup kvlist
+ * @{
+ * @file kvlist.c C-Style key/value item and list handling source. 
+ */
 
 #include <string.h>
 #include <stdlib.h>
 
 #include "kvlist.h"
 
-/** Find first key-value item in a list with given key */
 kv_item * kvlist_find_key( const char *key, kv_item *kvlist ) {
     if( !key ) return 0;
     while( kvlist ) {
@@ -16,22 +18,19 @@ kv_item * kvlist_find_key( const char *key, kv_item *kvlist ) {
     return NULL;
 }
 
-/** Find first key-value item in a list with given key and return the value */
 char * kvlist_get_value_from_key( const char *key, kv_item *kvlist ) {
     kv_item *kvitem = kvlist_find_key( key, kvlist );
     if( !kvitem ) return NULL;
     return kvitem->value;
 }
 
-/** Check if given list has an key-value item with given key */
 int kvlist_has_key( const char *key, kv_item *kvlist ) {
     if( kvlist_find_key( key, kvlist ) ) return 1;
     return 0;
 }
 
-/** free an entire key-value item list */
 void kvlist_free( kv_item *kvlist ) {
-    kv_item *ltemp = 0;
+    kv_item *ltemp = NULL;
     while( kvlist ) {
         ltemp = kvlist;
         kvlist = kvlist->next;
@@ -60,13 +59,10 @@ int kvlist_remove_item( kv_item **list, kv_item *item ) {
     return 0;
 }
 
-
-/** creates a new key-value item (this is also a list containing only the new item) */
 kv_item * kvlist_new_item( const char *key, const char *value ) {
-    return kvlist_new_item_push_front(key, value, 0);
+    return kvlist_new_item_push_front(key, value, NULL);
 }
 
-/** creates a new key-value item and in front of an existing item */
 kv_item * kvlist_new_item_push_front( const char *key, const char *value, kv_item *exitem ) {
     kv_item *new_item = malloc(sizeof(kv_item));
     if( new_item != NULL ) {
@@ -87,8 +83,6 @@ kv_item * kvlist_new_item_push_front( const char *key, const char *value, kv_ite
     return new_item;
 }
 
-
-/** creates a new key-value item and in front of an existing item */
 kv_item * kvlist_new_item_push_front_ll( const char *key, const unsigned klen, const char *value,
                                             const unsigned vlen, kv_item *exitem ) {
     kv_item *new_item = malloc(sizeof(kv_item));
@@ -109,3 +103,5 @@ kv_item * kvlist_new_item_push_front_ll( const char *key, const unsigned klen, c
     }
     return new_item;
 }
+
+/** @} */

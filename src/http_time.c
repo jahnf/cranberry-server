@@ -1,3 +1,8 @@
+/** @addtogroup http_time
+ * @{
+ * @file http_time.c Source file. 
+ */
+ 
 #include "http_time.h"
 
 #include <stdio.h>
@@ -6,22 +11,24 @@ static const char * _ymonths[] = {  "Jan","Feb","Mar","Apr","May","Jun",
 									"Jul","Aug","Sep","Oct","Nov","Dec" };
 static const char * _wkdays[] = { "Sun","Mon","Tue","Wed","Thu","Fri","Sat" };
 
-// buf needs to point to a buffer with at least 30 chars, writes 29 char date string + trailing 0
-char * http_time_now( char *buf ) {
+/* buf needs to point to a buffer with at least 30 chars, 
+ * writes 29 char date string + trailing 0 */
+char * http_time_now( char *buf )
+{
 	time_t rawtime = time( NULL );
 	return http_time( buf, rawtime );
 }
 
-char * http_time( char *buf, const time_t time ) {
-
-#ifdef _WIN32
-	// only 'thread-safe' on windows:
-    const struct tm *ti = gmtime( &time );
-#else
-	struct tm ti_;
-	const struct tm *ti = &ti_;
-	gmtime_r( &time, &ti_ );
-#endif
+char * http_time( char *buf, const time_t time )
+{
+    #ifdef _WIN32
+        /* only 'thread-safe' on windows: */
+        const struct tm *ti = gmtime( &time );
+    #else
+        struct tm ti_;
+        const struct tm *ti = &ti_;
+        gmtime_r( &time, &ti_ );
+    #endif
 
 	sprintf( buf, "%s, %02d %s %04d %02d:%02d:%02d GMT",
 								_wkdays[ti->tm_wday],
@@ -35,10 +42,10 @@ char * http_time( char *buf, const time_t time ) {
 	return buf;
 }
 
-// parses timestr for a possible http date string, and if successful
-// fill time with the correct time_t value.
-// see also http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
-// return 0 on success, error code else.. (if http_time was not formatted right...)
+/* parses timestr for a possible http date string, and if successful
+ * fill time with the correct time_t value.
+ * see also http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3.1
+ * return 0 on success, error code else.. (if http_time was not formatted right...) */
 int http_time_mktime( const char *timestr,  time_t *time )
 {
     char mon_buf[4] = {0};
@@ -77,3 +84,5 @@ int http_time_mktime( const char *timestr,  time_t *time )
 	if( time ) *time = 0;
 	return -1;
 }
+
+/** @} */

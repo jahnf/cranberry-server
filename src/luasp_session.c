@@ -1,4 +1,5 @@
-/* Lua server side scripting - session functions */
+/** @file luasp_session.c 
+ * Lua server side scripting - session functions. */
 
 #include "config.h"
 #if LUA_SUPPORT
@@ -23,12 +24,14 @@
     #endif
 #endif
 
-inline static void lsp_session_data_free( void *data ) {
+inline static void lsp_session_data_free( void *data )
+{
     kvlist_free(data);
 }
 
 /* C implementation of the luasp function session_start */
-int lsp_session_start( lua_State *L ) {
+int lsp_session_start( lua_State *L )
+{
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
     int ttl = 1800;
@@ -102,7 +105,8 @@ int lsp_session_start( lua_State *L ) {
 }
 
 /* C implementation of the luasp function session_var */
-int lsp_session_var( lua_State *L ) {
+int lsp_session_var( lua_State *L )
+{
     luasp_page_state_t *es;
     const int n = lua_gettop(L);
 
@@ -139,7 +143,7 @@ int lsp_session_var( lua_State *L ) {
                 lua_pushnil( L );
                 lua_setfield( L, -2, field );
 
-                if( exists ) {	// remove from session var list in C
+                if( exists ) {  // remove from session var list in C
                     kvlist_remove_item( es->sess_vars, exists );
                     exists = NULL;
                 }
@@ -165,7 +169,8 @@ int lsp_session_var( lua_State *L ) {
 }
 
 /* C implementation of the luasp function session_destroy */
-int lsp_session_destroy( lua_State *L ) {
+int lsp_session_destroy( lua_State *L )
+{
     luasp_page_state_t *es;
     if( lua_gettop( L ) )
         luaL_error( L, "incorrect number of arguments" );
@@ -187,7 +192,7 @@ int lsp_session_destroy( lua_State *L ) {
             if( !exists )
                 es->headers = exists = kvlist_new_item_push_front( HTTP_HEADER_SET_COOKIE, NULL, es->headers );
             if( exists ) {
-                if( exists->value != NULL )	free( exists->value );
+                if( exists->value != NULL ) free( exists->value );
                 exists->value = malloc( 1 + sizeof(WEBSESSION_COOKIE_NAME) + 2 + 29 + 8);
                 sprintf( exists->value, WEBSESSION_COOKIE_NAME "=; Expires=" LUASP_DATE_IN_PAST );
             }
