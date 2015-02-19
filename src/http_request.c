@@ -69,23 +69,38 @@ static const struct {
     {_SL("lua"), _ssL(HTTP_CONTENT_TYPE_LUA), MIMETYPE_FLAG_COMPRESSABLE},
     /* fewer used extensions later in list */
     {_SL("txt"), _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
-    {_SL("jpg"), _ssN(HTTP_CONTENT_TYPE_JPEG), MIMETYPE_FLAG_NONE},
-    {_SL("jpeg"),_ssN(HTTP_CONTENT_TYPE_JPEG), MIMETYPE_FLAG_NONE},
-    {_SL("json"),_ssN(HTTP_CONTENT_TYPE_JSON), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("xml"), _ssN(HTTP_CONTENT_TYPE_XML), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("jpg"), _ssN(HTTP_CONTENT_TYPE_JPEG),MIMETYPE_FLAG_NONE},
+    {_SL("jpeg"),_ssN(HTTP_CONTENT_TYPE_JPEG),MIMETYPE_FLAG_NONE},
+    {_SL("json"),_ssN(HTTP_CONTENT_TYPE_JSON),MIMETYPE_FLAG_COMPRESSABLE},
     {_SL("gif"), _ssN(HTTP_CONTENT_TYPE_GIF), MIMETYPE_FLAG_NONE},
     {_SL("zip"), _ssN(HTTP_CONTENT_TYPE_ZIP), MIMETYPE_FLAG_NONE},
     {_SL("tar"), _ssN(HTTP_CONTENT_TYPE_TAR), MIMETYPE_FLAG_NONE},
     {_SL("tgz"), _ssN(HTTP_CONTENT_TYPE_TGZ), MIMETYPE_FLAG_NONE},
-    {_SL("tar.gz"),_ssN(HTTP_CONTENT_TYPE_TGZ), MIMETYPE_FLAG_NONE},
-    {_SL("gz"),  _ssN(HTTP_CONTENT_TYPE_GZ), MIMETYPE_FLAG_NONE},
-    {_SL("log"), _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("tar.gz"),_ssN(HTTP_CONTENT_TYPE_TGZ),MIMETYPE_FLAG_NONE},
+    {_SL("gz"),  _ssN(HTTP_CONTENT_TYPE_GZ),   MIMETYPE_FLAG_NONE},
+    {_SL("7z"),  _ssN(HTTP_CONTENT_TYPE_7Z),   MIMETYPE_FLAG_NONE},
+    {_SL("log"), _ssN(HTTP_CONTENT_TYPE_TXT),  MIMETYPE_FLAG_COMPRESSABLE},
     {_SL("tif"), _ssN(HTTP_CONTENT_TYPE_TIFF), MIMETYPE_FLAG_NONE},
     {_SL("tiff"),_ssN(HTTP_CONTENT_TYPE_TIFF), MIMETYPE_FLAG_NONE},
-    {_SL("swf"), _ssN(HTTP_CONTENT_TYPE_FLASH), MIMETYPE_FLAG_NONE},
+    {_SL("swf"), _ssN(HTTP_CONTENT_TYPE_FLASH),MIMETYPE_FLAG_NONE},
     {_SL("htm"), _ssN(HTTP_CONTENT_TYPE_HTML), MIMETYPE_FLAG_COMPRESSABLE},
-    {_SL("pdf"), _ssN(HTTP_CONTENT_TYPE_PDF), MIMETYPE_FLAG_NONE},
-    {_SL("c"),   _ssN(HTTP_CONTENT_TYPE_C_CXX), MIMETYPE_FLAG_COMPRESSABLE},
-    {_SL("cpp"), _ssN(HTTP_CONTENT_TYPE_C_CXX), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("pdf"), _ssN(HTTP_CONTENT_TYPE_PDF),  MIMETYPE_FLAG_NONE},
+    {_SL("svg"), _ssN(HTTP_CONTENT_TYPE_SVG),  MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("svgz"),_ssN(HTTP_CONTENT_TYPE_SVG),  MIMETYPE_FLAG_NONE},
+    {_SL("c"),   _ssN(HTTP_CONTENT_TYPE_C_CXX),MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("cpp"), _ssN(HTTP_CONTENT_TYPE_C_CXX),MIMETYPE_FLAG_COMPRESSABLE},
+    /* other text file endings */
+    {_SL("ini"), _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("md"),  _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("sh"),  _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("rb"),  _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("py"),  _ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("yaml"),_ssN(HTTP_CONTENT_TYPE_TXT), MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("cc"),  _ssN(HTTP_CONTENT_TYPE_C_CXX),MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("h"),   _ssN(HTTP_CONTENT_TYPE_H_HPP),MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("hh"),  _ssN(HTTP_CONTENT_TYPE_H_HPP),MIMETYPE_FLAG_COMPRESSABLE},
+    {_SL("hpp"), _ssN(HTTP_CONTENT_TYPE_H_HPP),MIMETYPE_FLAG_COMPRESSABLE},
     /* multimedia, video, audio */
     {_SL("avi"), _ssN(HTTP_CONTENT_TYPE_AVI), MIMETYPE_FLAG_NONE},
     {_SL("mpg"), _ssN(HTTP_CONTENT_TYPE_MPG), MIMETYPE_FLAG_NONE},
@@ -95,10 +110,14 @@ static const struct {
     {_SL("mpeg"),_ssN(HTTP_CONTENT_TYPE_MPG), MIMETYPE_FLAG_NONE},
     {_SL("mp3"), _ssN(HTTP_CONTENT_TYPE_MP3), MIMETYPE_FLAG_NONE},
     {_SL("ogg"), _ssN(HTTP_CONTENT_TYPE_OGG), MIMETYPE_FLAG_NONE},
+    {_SL("wav"), _ssN(HTTP_CONTENT_TYPE_WAV), MIMETYPE_FLAG_NONE},
     /* applications */
     {_SL("doc"), _ssN(HTTP_CONTENT_TYPE_DOC), MIMETYPE_FLAG_NONE},
-    {_SL("docx"), _ssN(HTTP_CONTENT_TYPE_DOCX), MIMETYPE_FLAG_NONE},
+    {_SL("docx"),_ssN(HTTP_CONTENT_TYPE_DOCX),MIMETYPE_FLAG_NONE},
     {_SL("xls"), _ssN(HTTP_CONTENT_TYPE_XLS), MIMETYPE_FLAG_NONE},
+    {_SL("xlsx"),_ssN(HTTP_CONTENT_TYPE_XLSX),MIMETYPE_FLAG_NONE},
+    {_SL("ppt"), _ssN(HTTP_CONTENT_TYPE_PPT), MIMETYPE_FLAG_NONE},
+    {_SL("pptx"),_ssN(HTTP_CONTENT_TYPE_PPTX),MIMETYPE_FLAG_NONE},
 
     {NULL,0,NULL,0,0,0} };
 
@@ -235,8 +254,8 @@ static int _parse_url( char *str, size_t slen, http_req_info_t *reqinfo, const i
         } /* end for */
 
         if( !reqinfo->mimetype ) { /* if no mimetype found assign default mimetype */
-            reqinfo->mimetype = (char*)malloc( extensions[0].mlen + 1 );
-            strcpy(reqinfo->mimetype, extensions[0].mimetype);
+            reqinfo->mimetype = (char*)malloc( sizeof(HTTP_CONTENT_TYPE_BINARY) );
+            strcpy(reqinfo->mimetype, HTTP_CONTENT_TYPE_BINARY);
         }
     }
 
@@ -460,8 +479,8 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
             }
             pbuf = buf;
         }
-        else if( pch == pbuf ) { // end of header
-            pbuf += 2;  // pbuf should now point to beginning of data or trailing \0 of header
+        else if( pch == pbuf ) { /* end of header */
+            pbuf += 2;  /* pbuf should now point to beginning of data or trailing \0 of header */
             break;
         }
 
@@ -469,7 +488,7 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
             char *pdblp;
             
             pch[0] = 0;
-            pdblp = strchr(pbuf, ASCII_DBLPOINT);
+            pdblp = strchr(pbuf, ASCII_COLON);
 
             if( pdblp ) {
                 pdblp[0] = 0;
@@ -493,12 +512,12 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
                 lcurr->value = (char*)malloc( slen+1 );
                 strcpy(lcurr->value, pbuf);
 
-                if( (flags & REQ_READ_FLAG_FILL_COOKIES) && strcasecmp(lcurr->key, "Cookie") == 0 ) {
+                if( (flags & REQ_READ_FLAG_FILL_COOKIES) && strcasecmp(lcurr->key, HTTP_HEADER_COOKIE) == 0 ) {
                     _parse_cookie_info( &reqinfo->cookie_info, lcurr->value, slen );
                 }
 
             }
-            else { // No double point found
+            else { /* No colon found */
                 if( err ) *err = RRT_MALFORMED_REQUEST;
                 return reqinfo;
             }

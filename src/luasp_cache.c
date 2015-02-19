@@ -17,7 +17,7 @@
 #include "cthreads.h"
 
 #include "log.h"
-//SETLOGMODULENAME("lsp_cache")
+/*SETLOGMODULENAME("lsp_cache");*/
 
 #include <lua.h>
 
@@ -33,13 +33,14 @@ enum {
     LSPC_ITEM_TYPE_MEMORY  = 2
 };
 
-//typedef int (*lua_Writer) (lua_State *L,
-//                           const void* p,
-//                           size_t sz,
-//                           void* ud);
+/*typedef int (*lua_Writer) (lua_State *L,
+                             const void* p,
+                             size_t sz,
+                             void* ud);
+*/
 
 #define CACHE_HASH_TABLE_PWR 9
-#define CACHE_HASH_TABLE_SIZE (1<<CACHE_HASH_TABLE_PWR) /*512*/
+#define CACHE_HASH_TABLE_SIZE (1<<CACHE_HASH_TABLE_PWR) /* 512 */
 #define CACHE_HASH_MODULO (CACHE_HASH_TABLE_SIZE - 1)
 
 typedef struct memblock_t_struct memblock_t;
@@ -84,25 +85,23 @@ typedef struct {
 } cache_file_writer_ud_t;
 
 
+static int luasp_cache_file_writer(lua_State *L, const void* p, size_t sz, void *ud )
+{
+    /*cache_file_writer_ud_t *cwud = ud;
+      luasp_cache_item_file_t *cf_item = ((cache_file_writer_ud_t*)ud)->cache_item;
 
-
-static int luasp_cache_file_writer(lua_State *L, const void* p, size_t sz, void *ud ) {
-
-    //cache_file_writer_ud_t *cwud = ud;
-    //luasp_cache_item_file_t *cf_item = ((cache_file_writer_ud_t*)ud)->cache_item;
-
-    //cf_item->fp; // needs to be non-NULL and opened
-//    cf_item->filesize; // usually 0 on first call with ud
-//    cf_item->filename; // is set
-//    cf_item->time; // is set
-
+      cf_item->fp; // needs to be non-NULL and opened
+      cf_item->filesize; // usually 0 on first call with ud
+      cf_item->filename; // is set
+      cf_item->time; // is set
+    */
 
     return 0;
 }
 
 int luasp_cache_add_lua_State(void *pcache, lua_State *L, const char *name ) {
 
-    //luasp_cache_t *cache = (luasp_cache_t*)pcache;
+    /*luasp_cache_t *cache = (luasp_cache_t*)pcache; */
     /* check if entry for name already exists */
     /* automatically select type of cache , tmpfile or memory */
 
@@ -115,9 +114,9 @@ int luasp_cache_add_lua_State(void *pcache, lua_State *L, const char *name ) {
          *
          */
         ud.cache_item->filesize = 0;
-        // ud.cache_item->fp = fp;
+        /* ud.cache_item->fp = fp;*/
         ud.cache_item->time = time(NULL);
-        //ud.cache_item->filename = copy the name
+        /*ud.cache_item->filename = copy the name*/
 
         ret = lua_dump( L, luasp_cache_file_writer, &ud, 1 );
         if( ret == 0 ) {
@@ -125,7 +124,7 @@ int luasp_cache_add_lua_State(void *pcache, lua_State *L, const char *name ) {
             int b = 0;
             if( b ) {
 #ifdef _WIN32
-            //mkstemp("/tmp/filefileXXXXXXX");
+            /*mkstemp("/tmp/filefileXXXXXXX");*/
 #else
                 mkstemp("/tmp/filefileXXXXXXX");
 #endif
@@ -138,9 +137,9 @@ int luasp_cache_add_lua_State(void *pcache, lua_State *L, const char *name ) {
     return 0;
 }
 
-void *luasp_cache_init( thread_arg_t *args ) {
-
-//	luasp_cache_t *cache;
+void *luasp_cache_init( thread_arg_t *args )
+{
+//  luasp_cache_t *cache;
 //    const WebSrvSettings *pSettings = (const WebSrvSettings*)args->pSettings;
 //    if( !pSettings->scripting.cache ) return NULL;
 //
@@ -182,7 +181,8 @@ void *luasp_cache_init( thread_arg_t *args ) {
     return NULL;
 }
 
-void luasp_cache_free( void *pCache ) {
+void luasp_cache_free( void *pCache )
+{
     luasp_cache_t *cache = pCache;
     if( cache == NULL ) return;
 

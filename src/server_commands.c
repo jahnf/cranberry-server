@@ -8,43 +8,43 @@
 
 #include "server_commands.h"
 
-// function definitions
-//------------------------------------------------------------------------
-//int _query(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//  void * _query_init(void *data);
-//  int _query_free(void *data);
-//int _login(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//int _logout(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//int _tables(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//  void * _tables_init(void *data);
-//  int _tables_free(void *data);
-//int _jsutils(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//
-////int _datatest(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//int _dstatus(REQ_INFO * uinfo, WebArgs * args, void * init_data);
-//------------------------------------------------------------------------
+/* function definitions 
+ * ------------------------------------------------------------------------ */
+/*int _query(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+    void * _query_init(void *data);
+    int _query_free(void *data);
+  int _login(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+  int _logout(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+  int _tables(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+    void * _tables_init(void *data);
+    int _tables_free(void *data);
+  int _jsutils(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+
+  int _datatest(REQ_INFO * uinfo, WebArgs * args, void * init_data);
+  int _dstatus(REQ_INFO * uinfo, WebArgs * args, void * init_data); */
+/* ------------------------------------------------------------------------ */
 
 typedef struct {
-    /// command name
+    /** command name */
     const char *cmd;
-    /// does the command need a valid websession?
+    /** does the command need a valid websession? */
     int need_valid_session;
-    /// server command function pointer
+    /** server command function pointer */
     int (*function)(http_req_info_t *, thread_arg_t *, void *init_data);
-    /// server command init function
+    /** server command init function */ 
     void * (*init_fun)(void*);
-    /// server command free function
+    /** server command free function */
     int (*free_fun)(void*);
-    /// pointer to init data returned by server command init function
+    /** pointer to init data returned by server command init function */
     void *init_data;
 } ServerCommandSettings;
 
-/// server commands array
+/** server commands array */
 static ServerCommandSettings _commands [] = {
     {0,0,0,0,0,0},
-//  {"_tables",     0,  &_tables,       &_tables_init,  &_tables_free,  0 },
-//  {"_query",      0,  &_query,        &_query_init,   &_query_free,   0 },
-//  {"_jsutils",    0,  &_jsutils,      0,              0,              0 },
+/*  {"_tables",     0,  &_tables,       &_tables_init,  &_tables_free,  0 },
+    {"_query",      0,  &_query,        &_query_init,   &_query_free,   0 },
+    {"_jsutils",    0,  &_jsutils,      0,              0,              0 }, */
     {0,0,0,0,0,0} };
 
 /**

@@ -164,7 +164,7 @@ int cthread_mutex_destroy( c_mutex *mutex )
     #endif
 }
 
-// returns 0 on fail
+/* returns 0 on fail */
 int cthread_mutex_trylock( c_mutex *mutex )
 {
     #ifdef _WIN32
@@ -174,7 +174,7 @@ int cthread_mutex_trylock( c_mutex *mutex )
     #endif
 }
 
-// returns 0 on error
+/* returns 0 on error */
 int cthread_mutex_lock( c_mutex *mutex )
 {
     #ifdef _WIN32
@@ -185,7 +185,7 @@ int cthread_mutex_lock( c_mutex *mutex )
     #endif
 }
 
-//returns 0 on error
+/* returns 0 on error */
 int cthread_mutex_unlock( c_mutex *mutex )
 {
     #ifdef _WIN32
@@ -221,8 +221,8 @@ int cthread_sem_destroy( c_semaphore *sem )
 int cthread_sem_wait( c_semaphore *sem ) 
 {
     #ifdef _WIN32
-        return( WAIT_FAILED != WaitForSingleObject( *sem,     // handle to mutex
-                                                    INFINITE) );    // wait time
+        return( WAIT_FAILED != WaitForSingleObject( *sem,        /* handle to mutex */
+                                                    INFINITE) ); /* wait time */
     #else
         return sem_wait( sem ) == 0;
     #endif

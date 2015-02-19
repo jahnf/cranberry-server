@@ -63,7 +63,7 @@ size_t url_decode( char *dest, const char *src )
         case ASCII_PERCENT:
             ch = (gsHexDecodeMapAscii[(unsigned short)(*(src + 1))] << 4) |
                     gsHexDecodeMapAscii[(unsigned short)(*(src + 2))];
-            if (ch < 256) { // if one of the hex chars is bad,  d >= 256
+            if (ch < 256) { /* if one of the hex chars is bad, d >= 256 */
                 *dest++ = (char) ch;
                 src += 2;
             } else {

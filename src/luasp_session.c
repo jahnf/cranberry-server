@@ -143,13 +143,13 @@ int lsp_session_var( lua_State *L )
             exists = kvlist_find_key( field, *(es->sess_vars) );
 
             if( lua_isnil(L,2) ) {
-                // unset lua session variable
+                /* unset lua session variable */
                 lua_getglobal( L, LUASP_ENV_VAR_NAME );
                 lua_getfield(L, -1, "session");
                 lua_pushnil( L );
                 lua_setfield( L, -2, field );
 
-                if( exists ) {  // remove from session var list in C
+                if( exists ) {  /* remove from session var list in C */
                     kvlist_remove_item( es->sess_vars, exists );
                     exists = NULL;
                 }

@@ -38,7 +38,7 @@
 #define ASCII_EQUAL     0x3D /* '='  */
 #define ASCII_UNDERSCR  0x5F /* '_'  */
 #define ASCII_DOT       0x2E /* '.'  */
-#define ASCII_DBLPOINT  0x3A /* ':'  */
+#define ASCII_COLON     0x3A /* ':'  */
 #define ASCII_SEMICOLN  0x3B /* ';'  */
 #define ASCII_PERCENT   0x25 /* '%'  */
 #define ASCII_PLUS      0x2B /* '+'  */

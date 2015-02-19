@@ -115,7 +115,7 @@ int settings_loadini(server_settings_t *pSettings, const char* filename, int Def
 
     /* try to read config file */
     if( ini_readfile( filename, &ini, NULL ) != INI_OKAY ) {
-        // nothing here, ini is set to NULL by ini_readfile
+        /* nothing here, ini is set to NULL by ini_readfile */
     }
 
     /* if failed, try read config file in users home directory */

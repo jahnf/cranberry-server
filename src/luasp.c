@@ -114,7 +114,7 @@ typedef struct {
 /* init and free functions. later used to init cache and other things.. */
 void * luasp_init( thread_arg_t *args )
 {
-    //const WebSrvSettings *pSettings = args->pSettings;
+    /*const WebSrvSettings *pSettings = args->pSettings; */
     luasp_idata_t *data = malloc(sizeof(luasp_idata_t));
 
     if( data != NULL ) {

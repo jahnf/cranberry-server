@@ -197,7 +197,6 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
     http_req_info_t *req_info = NULL;
     thread_arg_t *args = (thread_arg_t*)data;
     server_settings_t *pSettings = (server_settings_t*)args->pSettings;
-//    args->buf = buf;
 
     /* register thread at the thread register */
     register_thread( args );
@@ -332,7 +331,7 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
                     header = kvlist_new_item_push_front( HTTP_HEADER_CACHE_CONTROL,
                                        "max-age=" STR(STATIC_CACHE_AGE_MAX), header );
 
-                    // Init the z_stream
+                    /* Init the z_stream */
                     memset( &stream, 0, sizeof(stream) );
                     stream.next_in = deflate_buf;
                     stream.avail_in = 0;
@@ -367,7 +366,8 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
                             status = mz_deflate( &stream, infile_remaining ? Z_NO_FLUSH : Z_FINISH );
 
                             if( (status == Z_STREAM_END) || (!stream.avail_out) ) {
-                                // Output buffer is full, or compression is done, so write buffer to output file.
+                                /* Output buffer is full, or compression is done
+                                 * -> write buffer to output file. */
                                 args->sendbuf->curpos = SENDBUF_SIZE - stream.avail_out;
                                 send_buffer_flush( args->sendbuf );
                                 stream.next_out = (unsigned char*)send_buffer;
