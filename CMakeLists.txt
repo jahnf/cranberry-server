@@ -1,4 +1,5 @@
-# cranberry-server
+# cranberry-server - a small C web server.
+# https://github.com/jahnf/cranberry-server
 # ======================================================================
 
 cmake_minimum_required (VERSION 2.6.0)
@@ -55,4 +56,14 @@ add_custom_command(OUTPUT version_header ${CMAKE_CURRENT_BINARY_DIR}/include/ver
 # create version header before building the server_version library
 add_dependencies(server_version versionheader)
 
-
+# Add a target to generate API documentation with Doxygen
+find_package(Doxygen QUIET)
+if(DOXYGEN_FOUND)
+    message(STATUS "Doxygen found. Adding 'cranberry-doc' target.")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+    add_custom_target(cranberry-doc
+      ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
+endif(DOXYGEN_FOUND)  

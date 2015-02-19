@@ -1,7 +1,10 @@
-/** @file http_request.c
- *  @author Jahn Fuchs
- *
- */
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */ 
+
+/** @file http_request.c */
 
 #include "http_defines.h"
 #define HTTP_REQUEST_IMPL_
@@ -14,9 +17,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-//int _recv_data_timed( const int fd, char *buf, const int buflen, const unsigned int timeout_sec );
-//int _recv_data_timed_rrt( const int fd, char *buf, const int buflen, const unsigned int timeout_sec );
-
+/*int _recv_data_timed( const int fd, char *buf, const int buflen, const unsigned int timeout_sec ); */
+/*int _recv_data_timed_rrt( const int fd, char *buf, const int buflen, const unsigned int timeout_sec ); */
 
 #ifdef _WIN32
     #include <winsock.h>

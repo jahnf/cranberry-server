@@ -4,7 +4,9 @@
 /** @defgroup kviter Key/Value String Iterator
  * Parse C-strings for key/value pairs - for example in 
  * HTTP GET-requests. Uses no heap, makes no copy and does not 
- * make  modification on the input data.  
+ * make  modification on the input data. All credit goes to Nick Galbreath
+ * and his stringencoders project (https://code.google.com/p/stringencoders/).
+ * With minor changes the code is an exact copy for the modp_qsiter.
  * 
  * Example usage:
  *
@@ -42,8 +44,8 @@ extern "C" {
 #include <string.h>
 /** Key-Value iterator struct. */
 typedef struct {
-	char key_sep;   /*!< Key separator character. */
-	char val_sep;   /*!< Value separator character. */
+    char key_sep;   /*!< Key separator character. */
+    char val_sep;   /*!< Value separator character. */
 
     const char* s;
     size_t pos;
@@ -70,8 +72,8 @@ typedef struct {
  *
  */
 void kviter_reset( kviter_t* kvi,
-		const char key_sep, const char val_sep,
-		const char* s, size_t len);
+        const char key_sep, const char val_sep,
+        const char* s, size_t len);
 
 /**
  * Get next key/value pair in query string

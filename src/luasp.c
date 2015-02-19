@@ -1,3 +1,9 @@
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 /** @file luasp.c
  * Implementation of embedded lua scripting.
  * The webserver can use embedded scripting inside dynamic pages (Lua server pages).
@@ -418,7 +424,8 @@ static kv_item * _push_cache_control_headers_front( kv_item *headers )
 int luasp_process( http_req_info_t *ri, thread_arg_t *args )
 {
     server_settings_t* pSettings = args->pSettings;
-    luasp_state_t lst = {0,0,0,0,LST_INIT,1,0};
+    luasp_state_t lst;
+    luasp_state_init( &lst );
 
     /* check for resources if not disabled */
     if( !pSettings->disable_er ) {

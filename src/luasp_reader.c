@@ -1,4 +1,10 @@
-/* Lua server side scripting - inspired by code from luasp.org */
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
+/* Lua server side scripting - modified version from luasp.org */
 
 #include "config.h"
 #if LUA_SUPPORT
@@ -13,6 +19,29 @@
     #define inline __inline
     #endif
 #endif
+
+/** States for the Lua server page file reader */
+enum {
+    LST_UNDEFINED = 0,
+    LST_CHAR1,
+    LST_CHAR2,
+    LST_CHAR3,
+    LST_CHAR4,
+    LST_STMT1,
+    LST_STMT2,
+    LST_STMT3,
+    LST_STMT12,
+    LST_STMT13,
+    LST_COMMENT1,
+    LST_COMMENT2,
+#ifndef LUASP_LEAVE_LF_UNTOUCHED
+    LST_LF1,
+    LST_LF2,
+#else
+    LST_LF1 = LST_CHAR1,
+#endif
+    LST_INIT = LST_CHAR1
+};
 
 /* lookup table taken from http://luasp.org */
 static const unsigned char lsp_char_lookup[256] = {
@@ -33,6 +62,18 @@ static const unsigned char lsp_char_lookup[256] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+
+void luasp_state_init( luasp_state_t* lst )
+{
+    if( lst == NULL ) return;
+    
+    lst->dp = lst->dp_end = lst->dp_cur = NULL;
+    lst->fp = NULL;
+    lst->st = LST_INIT;
+    lst->line          = 1; 
+    lst->cur_line_echo = 0;
+    lst->buf_offset    = 0;
+}
 
 /* add a character to the lua buffer when inside an echo call... */
 inline static void _lsp_add_char( luasp_state_t *lst, const int ch )

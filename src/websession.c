@@ -1,7 +1,11 @@
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 /** @file websession.c
- *	@author Jahn Fuchs
- *
- *  web session management
+ * Web session management.
  */
 
 #include <stdlib.h>

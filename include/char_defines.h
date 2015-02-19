@@ -1,8 +1,12 @@
-/**
- * @file char_defines.h
- *
- * @author Jahn Fuchs
- *
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
+/** @file char_defines.h
+ * ASCII defines for characters. Http replies need to be  
+ * encoded in ASCII also on system that use other encodings.
  */
 
 #ifndef CHAR_DEFINES_H_

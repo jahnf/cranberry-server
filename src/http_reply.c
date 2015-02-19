@@ -1,5 +1,10 @@
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 /** @file http_reply.c
- *  @author Jahn Fuchs
  *
  */
 
@@ -9,6 +14,8 @@
 #include "http_defines.h"
 #include "http_reply.h"
 #include "http_time.h"
+
+#include "version.h"
 
 #ifdef _WIN32
     #include <winsock.h>
@@ -252,15 +259,17 @@ void send_buffer_error_info(send_buffer_t *sendbuf, const char *filename,
     send_buffer_string_data( sendbuf, "<html><head><title>", 19 );
     send_buffer_string_data( sendbuf, numbuf, sprintf( numbuf, "%d ", status ) );
     send_buffer_string( sendbuf, status_msg );
-    send_buffer_string( sendbuf, "</title></head><body><h1>" );
+    send_buffer_string_data( sendbuf, "</title></head><body><h1>", 25 );
     send_buffer_string( sendbuf, numbuf );
     send_buffer_string( sendbuf, status_msg );
-    send_buffer_string( sendbuf, "</h1>" );
+    send_buffer_string_data( sendbuf, "</h1>", 5 );
 
     if( filename ) {
-        send_buffer_string( sendbuf, "<p>Requested file: <b>");
+        send_buffer_string_data( sendbuf, "<p>Requested file: <b>", 22);
         send_buffer_string( sendbuf, filename );
-        send_buffer_string( sendbuf, "</b><p>" );
+        send_buffer_string_data( sendbuf, "</b><p>", 7 );
     }
-    send_buffer_string( sendbuf, "<hr><address>msw-server</address></body></html>" );
+    send_buffer_string_data( sendbuf, "<hr><address>cranberry-server ", 30 );
+    send_buffer_string( sendbuf, get_version_string() );
+    send_buffer_string_data( sendbuf, "</address></body></html>", 24 );
 }

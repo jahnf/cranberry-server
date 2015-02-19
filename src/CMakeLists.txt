@@ -1,5 +1,7 @@
-# cranberry-server
-# ================
+# cranberry-server. A small C web server application with lua scripting, 
+# session and sqlite support. https://github.com/jahnf/cranberry-server
+# For licensing see LICENSE file or
+# https://github.com/jahnf/cranberry-server/blob/master/LICENSE
 
 cmake_minimum_required (VERSION 2.6.0)
 
@@ -105,15 +107,28 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
     set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "_CYGWIN")
 endif()
 
-# increase supported characters per line in config file
+# For release and minsizerelease builds, automatically strip the executable
+string(TOLOWER ${CMAKE_BUILD_TYPE} _type)
+if (${_type} STREQUAL "release" OR ${_type} STREQUAL "minsizerel")
+    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR
+        "${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+        set_target_properties(cranberry-server PROPERTIES LINK_FLAGS "-s")
+    endif()
+endif()
+
+# Increase supported characters per line in config file
 set_property(SOURCE ini_parser.c APPEND PROPERTY COMPILE_DEFINITIONS "INI_MAX_LINE=512")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     # windows...
-    set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS;_WINDOWS")
+    set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
+    set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "_WINDOWS")
 else()
-    # turn on all warnings in gcc
-    set_property(TARGET server_version APPEND PROPERTY COMPILE_FLAGS "-Wall")
-    set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_FLAGS "-Wall")
+    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang" OR
+        "${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+        # turn on all warnings in gcc and clang
+        set_property(TARGET server_version APPEND PROPERTY COMPILE_FLAGS "-Wall")
+        set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_FLAGS "-Wall")
+    endif()
     set_property(TARGET cranberry-server APPEND PROPERTY COMPILE_DEFINITIONS "REENTRANT")
 endif()

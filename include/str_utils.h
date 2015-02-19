@@ -38,11 +38,31 @@ unsigned stringlist_len( const stringlist_t* sl );
 /** Free a strig list. */
 void stringlist_free( stringlist_t* sl );
 
+/** djb2 string hash function. This algorithm (k=33) was first reported by dan
+ * bernstein many years ago in comp.lang.c. Another version of this algorithm 
+ * (now favored by bernstein) uses xor: `hash(i) = hash(i - 1) * 33 ^ str[i];` 
+ * the magic of number 33 (why it works better than many other constants, 
+ * prime or not) has never been adequately explained.
+ * see also http://www.cse.yorku.ca/~oz/hash.html */
+unsigned long strhash(const char* s);
+
+/** Modifies a string to lower case. */
+void str_tolower( char *s );
+
+/** Reverse a character string. */
+inline void strreverse(char* begin, char* end);
+
 /** Trim a string on the right end (removes blanks). */
 char *strtrim_right( char *p );
 
-/** Trim a string on the right end (removes blanks). */
-char *strtrim_right_e( char *beg, char *end );
+/** Trim a string on the right end (removes blanks).*/
+char *strtrim_right_end( char *beg, char *end );
+
+/** Returns a pointer to the first non-blank character in the given string. */
+inline char *strtrim_left( char *p );
+
+/** Combines the results of strtim_left and strtrim_right. */
+inline char * strtrim( char * p );
 
 /** Decode url encoded strings, destination and source can be the same string.
  * Url decoding functions taken from stringencoders sources by Nick Galbreath

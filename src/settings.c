@@ -1,3 +1,9 @@
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 /** @addtogroup settings
  * @{
  * @file settings.c Source file. 
@@ -18,8 +24,8 @@
 #define LUASP_SESSION_TIMEOUT_DEFAULT 1800
 #define SERVERLOG_DEFAULT "cranberry-server.log"
 
-#define INI_SECTION_SERVER 		    "server"
-#define INI_SECTION_SCRIPTING	    "scripting"
+#define INI_SECTION_SERVER          "server"
+#define INI_SECTION_SCRIPTING       "scripting"
 #define INI_SECTION_SCRIPTING_CACHE "scripting_cache"
 
 /* init webserver settings */
@@ -187,7 +193,7 @@ int settings_loadini(server_settings_t *pSettings, const char* filename, int Def
         else if( pSettings->deflate < 0 ) pSettings->deflate = 0;
     #endif
 
-    /* load scripting settings --------------------------------------------------- */
+    /* load scripting settings ---------------------------------------------- */
     #if LUA_SUPPORT
         if( pSettings->scripting.enabled == SETTING_VAL_NOT_SET )
                 pSettings->scripting.enabled = ini_dictionary_getboolean( ini, INI_SECTION_SCRIPTING, "enabled", 1 );

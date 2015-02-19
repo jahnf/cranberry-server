@@ -1,13 +1,9 @@
-/**
- * @file main.c
- * @author Jahn Fuchs
- *
- * mws - mini web share
- * A simple - single file/executable - webserver, with functionality to share
- * directories easily over a web interface. Easy to start with almost no setup.
- *
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
-
+ 
 /* first some windows specific includes and defines */
 #ifdef _WIN32
     #include <windows.h>

@@ -16,10 +16,9 @@ set(lua_srcs  lapi.c      lctype.c  lgc.c       loadlib.c   lstring.c  #luac.c
 add_library(lualib STATIC ${lua_srcs})
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-	set_target_properties(lualib PROPERTIES COMPILE_FLAGS "-D_WIN32" )
+    set_property(TARGET lualib APPEND PROPERTY COMPILE_DEFINITIONS "_WIN32")
     set_property(TARGET lualib APPEND PROPERTY COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
 else()
-	set_target_properties( lualib PROPERTIES COMPILE_FLAGS "-DLUA_USE_POSIX" )
-	target_link_libraries( lualib m )
+    set_property(TARGET lualib APPEND PROPERTY COMPILE_DEFINITIONS "LUA_USE_POSIX")
+    target_link_libraries( lualib m )
 endif()
-

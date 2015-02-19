@@ -1,7 +1,11 @@
-/** @file webthread.c
- *  @author Jahn Fuchs
- *
- */
+/* cranberry-server. A small C web server application with lua scripting, 
+ * session and sqlite support. https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */ 
+
+/** @file webthread.c */
+
 #include "config.h"
 
 #include <stdio.h>
