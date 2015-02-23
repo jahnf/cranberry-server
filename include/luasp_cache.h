@@ -1,3 +1,9 @@
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 #ifndef _LUASP_CACHE_H_
 #define _LUASP_CACHE_H_
 #if LUA_SUPPORT

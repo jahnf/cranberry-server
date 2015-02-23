@@ -1,3 +1,9 @@
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 #ifndef CMDLINE_H_
 #define CMDLINE_H_
 

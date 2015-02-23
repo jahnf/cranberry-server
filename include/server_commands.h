@@ -1,3 +1,9 @@
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+ 
 /** @file server_commands.h
  *	@author Jahn Fuchs
  *

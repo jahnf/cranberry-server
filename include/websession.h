@@ -1,6 +1,10 @@
-/** @file websession.h
- *  @author Jahn Fuchs
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
+ 
+/** @file websession.h */
 
 #ifndef WEBSESSION_H_
 #define WEBSESSION_H_

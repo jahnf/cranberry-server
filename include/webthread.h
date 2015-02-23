@@ -1,5 +1,10 @@
-/** @file webthread.h
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
+ 
+/** @file webthread.h */
 
 #ifndef WEBTHREAD_H_
 #define WEBTHREAD_H_

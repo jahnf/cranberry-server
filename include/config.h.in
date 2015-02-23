@@ -1,4 +1,10 @@
-/* Build configuration */
+/* cranberry-server 
+ * https://github.com/jahnf/cranberry-server
+ * For licensing see LICENSE file or
+ * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
+ */
+
+/* Build configuration - input file for auto generation */
 #ifndef CONFIG_H__
 #define CONFIG_H__
 
