@@ -10,7 +10,8 @@
  *  cthreads wraps simple threads, mutexes, semaphores and a readers-writer_lock
  *  that can be used without changes on both posix and ms windows systems.
  */
-
+ 
+#include <time.h>
 #include "cthreads.h"
 
 #ifdef _WIN32
@@ -28,28 +29,34 @@ int cthread_sleep(unsigned int milliseconds)
         Sleep( milliseconds );
         return 1;
     #else
-        struct timespec timeToWait;
-        struct timeval now;
-        pthread_mutex_t fakeMutex = PTHREAD_MUTEX_INITIALIZER;
-        pthread_cond_t fakeCond = PTHREAD_COND_INITIALIZER;
+        struct timespec rqtp, rmtp;
+        rqtp.tv_sec = (milliseconds / 1000);
+        rqtp.tv_nsec = ((long)(milliseconds % 1000))*1000000L;
 
-        gettimeofday(&now,NULL);
+        if(nanosleep(&rqtp , &rmtp) < 0 )   
+        {
+            /* rmtp should contain the remaining time if nanosleep fails */
+            /* Fallback alternative for sleep with pthread timedwait */
+            struct timespec timeToWait;
+            struct timeval now;
+            pthread_mutex_t fakeMutex = PTHREAD_MUTEX_INITIALIZER;
+            pthread_cond_t fakeCond = PTHREAD_COND_INITIALIZER;
 
-        timeToWait.tv_nsec = now.tv_usec*1000 + ((milliseconds % 1000) * 1000 * 1000 );
-        timeToWait.tv_sec = now.tv_sec + milliseconds/1000 + (timeToWait.tv_nsec / 1000000000);
-        timeToWait.tv_nsec %= 1000000000;
+            gettimeofday(&now,NULL);
 
-        pthread_mutex_lock( &fakeMutex );
-        pthread_cond_timedwait( &fakeCond, &fakeMutex, &timeToWait );
-        pthread_mutex_unlock( &fakeMutex );
+            timeToWait.tv_nsec = now.tv_usec*1000 + (rmtp.tv_nsec);
+            timeToWait.tv_sec = now.tv_sec + rmtp.tv_sec + (timeToWait.tv_nsec / 1000000000);
+            timeToWait.tv_nsec %= 1000000000;
 
+            pthread_mutex_lock( &fakeMutex );
+            pthread_cond_timedwait( &fakeCond, &fakeMutex, &timeToWait );
+            pthread_mutex_unlock( &fakeMutex );
+        }
         return 1;
     #endif
     }
     return 1;
 }
-
-
 
 int cthread_equal(c_thread this, c_thread other)
 {
@@ -98,7 +105,6 @@ size_t cthread_attr_getstacksize()
         return stacksize;
     #endif
 }
-
 
 /* returns 0 on error */
 int cthread_detach(c_thread * thread_handle)
@@ -292,8 +298,26 @@ int cthread_rwlock_write_wait( c_rwlock *rwlock )
 {
     unsigned int i; 
     if( !cthread_sem_wait( &rwlock->write ) ) return 0;
+    /* block all readers */
     for( i = 0; i < rwlock->max_readers; ++i )      
         cthread_sem_wait( &rwlock->readers );
+    return 1;
+}
+
+int cthread_rwlock_write_trywait( c_rwlock *rwlock ) 
+{
+    unsigned int i; 
+    if( !cthread_sem_trywait( &rwlock->write ) ) return 0;
+    for( i = 0; i < rwlock->max_readers; ++i ) {      
+        if( !cthread_sem_trywait( &rwlock->readers ) ) break;
+    }
+    if( i != rwlock->max_readers ) {
+        cthread_sem_post( &rwlock->write );
+        for ( ; i != 0; --i) {
+            cthread_sem_post( &rwlock->readers );
+        }
+        return 0;
+    }
     return 1;
 }
 
