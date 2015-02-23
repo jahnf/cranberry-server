@@ -170,7 +170,7 @@ Suite *cthread_test_suite( void )
     tcase_add_test (tc_core, cthread_mutex_basic);
     tcase_add_test (tc_core, cthread_rwlock_basic);
     tcase_add_test (tc_core, cthread_semaphore_basic);
-    tcase_add_test (tc_core, cthread_rwlock1);
+    /*tcase_add_test (tc_core, cthread_rwlock1);*/
     suite_add_tcase (s, tc_core);
 
     return s;
