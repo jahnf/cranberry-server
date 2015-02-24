@@ -64,6 +64,7 @@ int cthread_equal( c_thread thread1, c_thread thread2 );
  * to terminate.  If that thread has already terminated, then the function
  * returns immediately.  The thread specified by thread must be joinable. */
 int cthread_join( c_thread *thread );
+int cthread_join_return_value( c_thread *thread, CTHREAD_RETURN *thread_return );
 
 /** Sleep for the given milliseconds. Returns 0 on failure. */
 int cthread_sleep(unsigned int milliseconds);

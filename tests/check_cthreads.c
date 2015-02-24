@@ -14,9 +14,14 @@
 #define THREAD_STACK_SIZE 512000
 
 #define SEMAPHORE_INIT_VALUE 10
+#define INITIAL_PROTECTED_DATA_VALUE 268435455
+#define RWTEST_MAX_READER 9
 
-#define RWTEST1_READER 5
-#define RWTEST1_WRITER 3
+typedef struct {
+    int id;
+    int *protected_data;
+    c_mutex *mutex;
+} test_mutex_thread_data;
 
 typedef struct {
     int num;
@@ -55,18 +60,18 @@ CTHREAD_RET rwlock_writer(CTHREAD_ARG data)
 START_TEST (cthread_rwlock_basic)
 {
     c_rwlock rwlock; int i = 0;
-    ck_assert(cthread_rwlock_init( &rwlock, RWTEST1_READER ));
+    ck_assert(cthread_rwlock_init( &rwlock, RWTEST_MAX_READER ));
 
     ck_assert(cthread_rwlock_write_trywait( &rwlock ) != 0); 
     ck_assert(cthread_rwlock_write_post( &rwlock ) != 0); 
 
-    for( i = 0; i < RWTEST1_READER; ++i ) {
+    for( i = 0; i < RWTEST_MAX_READER; ++i ) {
         ck_assert(cthread_rwlock_read_trywait( &rwlock ) != 0); 
         ck_assert(cthread_rwlock_write_trywait( &rwlock ) == 0); 
     }
     ck_assert(cthread_rwlock_read_trywait( &rwlock ) == 0); 
 
-    for( i = 0; i < RWTEST1_READER; ++i ) {
+    for( i = 0; i < RWTEST_MAX_READER; ++i ) {
         ck_assert(cthread_rwlock_write_trywait( &rwlock ) == 0); 
         ck_assert(cthread_rwlock_read_post( &rwlock ) != 0); 
     }
@@ -86,7 +91,7 @@ START_TEST (cthread_mutex_basic)
     ck_assert(cthread_mutex_init( &mutex ));
     trylock_result = cthread_mutex_trylock( &mutex );
     ck_assert(trylock_result != 0);
-    if(trylock_result) {
+    if( trylock_result != 0 ) {
         ck_assert(cthread_mutex_trylock( &mutex ) == 0);
         ck_assert(cthread_mutex_unlock( &mutex ));
     }
@@ -109,53 +114,54 @@ START_TEST (cthread_semaphore_basic)
 }
 END_TEST
 
-/* This test only tests the return values of the cthread_rwlock_* 
- * functions and the user data increment in the writer threads */
-START_TEST (cthread_rwlock1)
+CTHREAD_RET mutex_threads_function1(CTHREAD_ARG data)
 {
-    int i, shared_data=0;
-    c_thread readerthreads[RWTEST1_READER];
-    c_thread writerthreads[RWTEST1_WRITER];
-    c_rwlock rwlock;
-    /* Initialize rwlock with less max readers than reader threads in the test */
-    ck_assert(cthread_rwlock_init( &rwlock, RWTEST1_READER-1 ));
+    test_mutex_thread_data *mydata = (test_mutex_thread_data*) data;
+    int read_value;
     
-    for( i = 0; i < RWTEST1_WRITER; ++i ) {
-        /* it's the thread's job to free data */
-        rwlock_thread_data *data = malloc( sizeof(rwlock_thread_data) );
-        ck_assert(data!=NULL);
-        data->num = i;
-        data->shared_data = &shared_data;
-        data->rwlock = &rwlock;
-        if( !cthread_create(&writerthreads[i], rwlock_writer, data) ) {
-            ck_abort_msg("Writer thread creation error.");
-            printf("write thread creation error(%d)\n", i);
-            free( data ); 
-        }
-    }  
-    
-    for( i = 0; i < RWTEST1_READER; ++i ) {
-        rwlock_thread_data *data = malloc( sizeof(rwlock_thread_data) );
-        ck_assert(data!=NULL);
-        data->num = i;
-        data->shared_data = &shared_data;
-        data->rwlock = &rwlock;
-        if( !cthread_create(&readerthreads[i], rwlock_reader, data) ) {
-            ck_abort_msg("Reader thread creation error.");
-            printf("reader thread creation error(%d)\n", i);
-            free( data ); 
-        }
-    }
-    
-    /* Wait for all threads to finish */
-    for( i = 0; i < RWTEST1_READER; ++i ) {
-        ck_assert(cthread_join( &readerthreads[i] ));
-    }
-    for( i = 0; i < RWTEST1_WRITER; ++i ) {
-        ck_assert(cthread_join( &writerthreads[i] ));
-    }
+    ck_assert(cthread_mutex_trylock( mydata->mutex ) == 0);
+    ck_assert(cthread_mutex_lock( mydata->mutex ) == 0);
 
-    ck_assert(cthread_rwlock_destroy( &rwlock ));
+    read_value = *mydata->protected_data;
+    *mydata->protected_data = mydata->id;
+    ck_assert(read_value==INITIAL_PROTECTED_DATA_VALUE);
+    
+    ck_assert(cthread_mutex_unlock( mydata->mutex ) == 0);
+    return (CTHREAD_RET) (long) read_value;
+}
+
+START_TEST (cthread_mutex_threads)
+{
+    test_mutex_thread_data td1;
+    c_thread thread1; c_mutex mutex; 
+    CTHREAD_RET thread1_return = 0;
+    int trylock_result = 0;
+    int protected_data = INITIAL_PROTECTED_DATA_VALUE;
+    
+    td1.id = 1; 
+    td1.protected_data = &protected_data;
+    td1.mutex = &mutex;
+    
+    ck_assert(cthread_mutex_init( &mutex ));
+    trylock_result = cthread_mutex_trylock( &mutex );
+    ck_assert(trylock_result != 0);
+    if( trylock_result != 0 ) {
+        /* Create thread */
+        ck_assert(cthread_create(&thread1, mutex_threads_function1, &td1));
+        /* check values and unlock mutex */
+        ck_assert(protected_data==INITIAL_PROTECTED_DATA_VALUE);
+        ck_assert(cthread_mutex_unlock( &mutex ));
+        /* Join thread - thread should get mutex lock, read, write and unlock mutex again */
+        ck_assert(cthread_join_return_value( &thread1, &thread1_return ));
+        /* Check threads return value*/
+        ck_assert((int)(long)thread1_return == INITIAL_PROTECTED_DATA_VALUE);
+        /* Check values */
+        ck_assert(cthread_mutex_trylock( &mutex ));
+        ck_assert(protected_data==td1.id);
+        ck_assert(cthread_mutex_unlock( &mutex ));
+    }
+    
+    ck_assert(cthread_mutex_destroy( &mutex ));
 }
 END_TEST
 
@@ -168,9 +174,9 @@ Suite *cthread_test_suite( void )
     TCase *tc_core = tcase_create ("Core");
     
     tcase_add_test (tc_core, cthread_mutex_basic);
+    tcase_add_test (tc_core, cthread_mutex_threads);
     tcase_add_test (tc_core, cthread_rwlock_basic);
     tcase_add_test (tc_core, cthread_semaphore_basic);
-    /*tcase_add_test (tc_core, cthread_rwlock1);*/
     suite_add_tcase (s, tc_core);
 
     return s;

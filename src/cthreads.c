@@ -149,6 +149,20 @@ int cthread_join( c_thread *thread )
 }
 
 /* returns 0 on error */
+int cthread_join_return_value( c_thread *thread, CTHREAD_RET *thread_return )
+{
+    #ifdef _WIN32
+        CTHREAD_RET wait_return =  WaitForSingleObject( *thread,     /* handle to mutex */
+                                                        INFINITE) ); /* wait time */
+        if( wait_return == WAIT_FAILED ) return 0;
+        return GetExitCodeThread( *thread, thread_return);
+    #else
+        return  pthread_join(*thread, thread_return) == 0;
+    #endif
+}
+
+
+/* returns 0 on error */
 int cthread_mutex_init( c_mutex *mutex )
 {
     #ifdef _WIN32
