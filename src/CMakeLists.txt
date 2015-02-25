@@ -21,6 +21,7 @@ set(server_srcs
             websession.c        # session functionality
             cthreads.c          # wraps pthread and windows basic thread functionality
             cmdline.c           # command option parsing
+            optparse.c          # ...
             ip_socket_utils.c   # socket and ip related functions
             log.c               # logging functionality
             settings.c          # settings loading

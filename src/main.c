@@ -117,15 +117,17 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
     }
 
     {   /* Parse command line arguments */
-        int err = cmdline_parse( &baseargs, argc, argv, &config_file );
+        int err = cmdline_parse( APP_BASENAME, &baseargs, argc, argv, &config_file );
         if( err != CMDLINE_OKAY ) {
 
             if( err == CMDLINE_HELP_REQUESTED )
                 cmdline_print_help( APP_BASENAME, 1 );
-            else
-                cmdline_print_help( APP_BASENAME, 0 );
+            else if( err == CMDLINE_VERSION_REQUESTED )
+                cmdline_print_version( APP_BASENAME );
 
-            if( err != CMDLINE_HELP_REQUESTED ) main_exit_code = EXIT_FAILURE;
+            if( err == CMDLINE_FORMAT_ERROR ) 
+                main_exit_code = EXIT_FAILURE;
+                
             goto label_nolog_exit;
         }
     }

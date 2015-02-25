@@ -8,20 +8,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
-
 #include "cmdline.h"
-#include "settings.h"
-#include "log.h"
+
+#include "config.h"
 #include "version.h"
+#include "log.h"
+
+#include "settings.h"
+#include "ip_socket_utils.h"
 #include "cfile.h"
+#include "optparse.h"
 
 #if LUA_SUPPORT
 #include <lua.h>
 #endif
 
-/* Print help to console */
-void cmdline_print_help( const char *name, const int detail )
+void cmdline_print_version( const char *name )
 {
 	printf( "%s (%s", name, get_version_string());
 
@@ -35,235 +37,177 @@ void cmdline_print_help( const char *name, const int detail )
 	}
 
 	printf( "\n"
-#if DEFLATE_SUPPORT || LUA_SUPPORT
+    #if DEFLATE_SUPPORT || LUA_SUPPORT
 			" [compiled with: "
-#endif
-#if DEFLATE_SUPPORT
+    #endif
+    #if DEFLATE_SUPPORT
 			"deflate"
-#endif
-#if DEFLATE_SUPPORT && (LUA_SUPPORT || SQLITE_SUPPORT)
+    #endif
+    #if DEFLATE_SUPPORT && (LUA_SUPPORT || SQLITE_SUPPORT)
 			", "
-#endif
-#if LUA_SUPPORT
+    #endif
+    #if LUA_SUPPORT
 			LUA_VERSION
-#endif
-#if DEFLATE_SUPPORT && LUA_SUPPORT && SQLITE_SUPPORT
+    #endif
+    #if DEFLATE_SUPPORT && LUA_SUPPORT && SQLITE_SUPPORT
             ", "
-#endif
-#if SQLITE_SUPPORT
+    #endif
+    #if SQLITE_SUPPORT
             "sqlite3"
-#endif
-#if DEFLATE_SUPPORT || LUA_SUPPORT || SQLITE_SUPPORT
+    #endif
+    #if DEFLATE_SUPPORT || LUA_SUPPORT || SQLITE_SUPPORT
 			"]"
-#endif
-			"\n\n"
-			"usage: %s <options>\n\n"
-			"   options:\n"
-			"     -h, -?          display full help and exit \n"
-			"     -p  {port}      set port via command line\n"
-			"     -d  {dir}       set www root dir\n"
-			"     -c  {file}      load specific config file\n"
-			"     -l  {file}      specify logfile output\n",
-			name);
-	if( detail > 0 ) {
-	printf( "     -d  {dir}       set www root dir\n"
-			"     -rd             disable embedded resources\n"
-			"     -llf            log level to file\n"
-			"     -llc            log level to console\n"
-			"                     valid log levels are 0-6\n"
-			"                     0 - disabled, 1 - always, 2 - error, 3 - warning\n"
-			"                                   4 - info,   5 - debug, 6 - verbose\n");
-	}
-#if DEFLATE_SUPPORT
-	if( detail > 0 )
-	printf( "     -deflate {0-9}  turn compression support off (0) or on (1-9)\n"
-			"                     default value is off (0)\n");
-#endif
-#if LUA_SUPPORT
-	if( detail > 0 ) {
-        printf( "     -luasp {0,1}    turn lua scripting on (1) or off (0)\n"
-                "                     default value is on\n" );
-        printf( "     -sc {[0|mf]}    scripting cache, 0=off, m=memory, f=tmpfile\n"
-                "                     options can be mixed, i.e. '-sc mf' or just '-sc f'\n"
-                "                     default is off\n" );
-	}
-#endif
-#ifdef _WIN32
-#ifdef USE_WINDOWS_SERVICE
-	if( detail > 0 )
-	printf( "\n"
-			"     -svcinstall     register as windows service\n"
-			"     -svcuninstall   unregister windows service\n");
-#endif
-#endif
-	printf( "\n"
-			"   Example: %s -p 8181 &\n\n", name);
+    #endif
+            "\n");
 }
 
-int cmdline_parse( thread_arg_t *args, const int argc, char **argv, char ** config_file )
+static void cmdline_print_option_list(struct optparse_long *longopts)
+{
+    struct optparse_long *lo;
+    int longname_maxlen = 0;
+    for( lo = longopts; lo != NULL && 
+         !(lo->shortname == 0 && lo->longname == NULL); ++lo ) {
+        if( lo->help_text == NULL ) continue;
+        if( lo->longname && longname_maxlen < strlen(lo->longname) )
+            longname_maxlen = strlen(lo->longname);
+    }
+    
+    for( lo = longopts; lo != NULL && 
+         !(lo->shortname == 0 && lo->longname == NULL); ++lo ) {
+        if( lo->help_text == NULL ) continue;
+
+        if( lo->shortname != 0 )
+            printf(" -%c", lo->shortname);
+        else 
+            printf("    ");
+
+        if( lo->shortname != 0 && lo->longname )
+            printf(", ");
+        else
+            printf("  ");
+
+        if( lo->longname ) {
+            int length_rest = longname_maxlen - strlen(lo->longname) + 2;
+            printf("--%s", lo->longname);
+            for( ; length_rest; -- length_rest ) printf(" ");
+        } else {
+            int length_rest = longname_maxlen + 4;
+            for( ; length_rest; -- length_rest ) printf(" ");
+        }
+
+        printf("%s\n", lo->help_text);
+    }
+}
+
+static struct optparse_long cmd_longopts[] = {
+    {"version",          'v', OPTPARSE_NONE, "Print version"},
+    {"help",             'h', OPTPARSE_NONE, "Print help"},
+    {"port",             'p', OPTPARSE_REQUIRED, "Set server port"},
+    {"config",           'c', OPTPARSE_REQUIRED, "Set config file"},
+    {"webroot",          'r', OPTPARSE_REQUIRED, "Set www root directory"},
+    {"logfile",          'l', OPTPARSE_REQUIRED, "Set log file"},
+    {"loglevel-file",    'F', OPTPARSE_REQUIRED, "Set loglevel for logfile"},
+    {"loglevel-console", 'C', OPTPARSE_REQUIRED, "Set loglevel for console"},
+    #if DEFLATE_SUPPORT
+    {"deflate",          'd', OPTPARSE_REQUIRED, "Set deflate compression level"},
+    #endif
+    {NULL,               'D', OPTPARSE_NONE, "Disable embedded resources"},
+    {0}
+};
+
+/* Print help to console */
+void cmdline_print_help( const char *name, const int detail )
+{
+    printf("Usage: %s [OPTIONS]\n\n", name);
+    cmdline_print_option_list( cmd_longopts );
+	printf( "\n  Example: %s -p 8181 &\n\n", name);
+}
+
+int cmdline_parse( const char * name, thread_arg_t *args, const int argc, 
+                   char **argv, char ** config_file )
 {
 	server_settings_t *pSettings = args->pSettings;
-	int i=1, err=CMDLINE_OKAY;
+	int err=CMDLINE_OKAY; 
 
-    /* check command line arguments */
-	for( ; i < argc; ++i ) {
+    struct optparse options;
+    int option;
+    optparse_init(&options, argv);
 
-		if( !strcmp(argv[i], "-p") ) {
-			if( i+1 < argc && ++i ) {
-				pSettings->port = atoi( argv[i] );	/* set port */
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		else if( !strcmp(argv[i], "-c") ) {
-			if( i+1 < argc && ++i ) {
-				*config_file = argv[i]; /* set config file to load */
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		else if( !strcmp(argv[i], "-d") ) {
-			if( i+1 < argc && ++i ) {
-				/* set www root dir */
-				if( pSettings->wwwroot != NULL )
-					free( pSettings->wwwroot );
-				if( (pSettings->wwwroot  = malloc( strlen(argv[i]) + 2 )) ) {
-					strcpy( pSettings->wwwroot, argv[i] );
-					if( pSettings->wwwroot[strlen(argv[i])-1] != DIR_SEP) {
-						pSettings->wwwroot[strlen(argv[i])+1] = '\0';
-						pSettings->wwwroot[strlen(argv[i])] = DIR_SEP;
-					}
-				}
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		else if( !strcmp(argv[i], "-rd") ) {
-			/* Disable embedded resource lookups */
-			pSettings->disable_er = 1;
-		}
-#if DEFLATE_SUPPORT 
-		else if( !strcmp(argv[i], "-deflate") ) {
-			if( i+1 < argc && ++i ) {
-				/* set deflate option */
-				pSettings->deflate = atoi( argv[i] );
-				if( pSettings->deflate < 0 || pSettings->deflate > 9 || !strlen(argv[i]) ) {
-					fprintf(stderr, "%s option needs argument between 0-9\n\n", argv[i-1]);
-					err = CMDLINE_FORMAT_ERROR;
-				}
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-#endif
-#if LUA_SUPPORT
-		else if( !strcmp(argv[i], "-luasp") ) {
-			if( i+1 < argc && ++i ) {
-				/* set scripting enable option */
-				pSettings->scripting.enabled = atoi( argv[i] );
-				if( pSettings->scripting.enabled < 0
-				        || pSettings->scripting.enabled > 1
-				        || !strlen(argv[i]) ) {
-					fprintf(stderr, "%s option needs argument 0 or 1\n\n", argv[i-1]);
-					err = CMDLINE_FORMAT_ERROR;
-				}
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-        else if( !strcmp(argv[i], "-sc") ) {
-            if( i+1 < argc && ++i ) {
-                /* set scripting cache option */
-                size_t len = strlen( argv[i] );
-                size_t j = 0;
-                pSettings->scripting.cache = 0;
-                for( ; j < len; ++j ) {
-                    if( argv[i][j] == 'm' )
-                        pSettings->scripting.cache |= LUASP_CACHING_MEMORY;
-                    else if( argv[i][j] == 'f' )
-                        pSettings->scripting.cache |= LUASP_CACHING_FILE;
-                    else if( argv[i][j] == '0' )
-                        pSettings->scripting.cache |= LUASP_CACHING_NONE;
-                    else {
-                        fprintf(stderr, "%s option has unknown argument '%c'\n\n", argv[i-1], argv[i][j]);
-                        err = CMDLINE_FORMAT_ERROR;
-                        break;
-                    }
-                }
-            }
-            else {
-                fprintf(stderr, "%s option needs argument\n\n", argv[i]);
+    while ((option = optparse_long(&options, cmd_longopts, NULL)) != -1) {
+        switch (option) {
+        case 'v':
+            return CMDLINE_VERSION_REQUESTED;
+            break;
+        case 'h':
+            return CMDLINE_HELP_REQUESTED;
+            break;
+        case 'p':
+            pSettings->port = atoi( options.optarg );
+            if( pSettings->port < SERVER_PORT_MIN || pSettings->port > SERVER_PORT_MAX ) {
+                fprintf(stderr, "'%c' option needs to be between %d-%d\n", 
+                        option, SERVER_PORT_MIN, SERVER_PORT_MAX);
                 err = CMDLINE_FORMAT_ERROR;
             }
+            break;
+        case 'c':
+            *config_file = (char*)options.optarg;
+            break;
+        case 'r':
+            /* set www root dir */
+            if( pSettings->wwwroot != NULL )
+                free( pSettings->wwwroot );
+            if( (pSettings->wwwroot  = malloc( strlen(options.optarg) + 2 )) ) {
+                strcpy( pSettings->wwwroot, options.optarg );
+                /* Make sure directory ends with a trailing directory separator */
+                if( pSettings->wwwroot[strlen(options.optarg)-1] != DIR_SEP) {
+                    pSettings->wwwroot[strlen(options.optarg)+1] = '\0';
+                    pSettings->wwwroot[strlen(options.optarg)] = DIR_SEP;
+                }
+            }
+            break;
+        case 'D':
+            pSettings->disable_er = 1;
+            break;
+        case 'l':
+            free( pSettings->logfile );
+            if( (pSettings->logfile = malloc( strlen(options.optarg) + 1 )) )
+                strcpy( pSettings->logfile, options.optarg );
+            break;
+        case 'F': 
+            /* set file log level */
+            pSettings->loglevel_file = atoi( options.optarg );
+            if( pSettings->loglevel_file < log_DISABLED 
+                || pSettings->loglevel_file > log_VERBOSE ) {
+                fprintf(stderr, "'%c' option has an invalid log level value.\n"
+                                "Log levels range from %d (disabled) to %d (verbose)\n", 
+                                option, log_DISABLED, log_VERBOSE);   
+                return CMDLINE_FORMAT_ERROR;
+            }
+            break;
+        case 'C': 
+            /* set console log level */
+            pSettings->loglevel_console = atoi( options.optarg );
+            if( pSettings->loglevel_console < log_DISABLED 
+                || pSettings->loglevel_console > log_VERBOSE ) {
+                fprintf(stderr, "'%c' option has an invalid log level value.\n"
+                                "Log levels range from %d (disabled) to %d (verbose)\n", 
+                                option, log_DISABLED, log_VERBOSE);   
+                return CMDLINE_FORMAT_ERROR;
+            }
+            break;
+        #if DEFLATE_SUPPORT 
+        case 'd':
+            pSettings->deflate = atoi( options.optarg );
+            if( pSettings->deflate < 0 || pSettings->deflate > 9 || !strlen(options.optarg) ) {
+                fprintf(stderr, "'%c' option needs to be between 0-9\n", option);
+                err = CMDLINE_FORMAT_ERROR;
+            }
+            break;
+        #endif
+        case '?':
+            fprintf(stderr, "%s: %s\n", name, options.errmsg);
+            err = CMDLINE_FORMAT_ERROR;
         }
-#endif
-		else if( !strcmp(argv[i], "-l") ) {
-			if( i+1 < argc && ++i ) {
-				/* set log file */
-				free ( pSettings->logfile );
-				if( (pSettings->logfile = malloc( strlen(argv[i]) + 1 )) )
-					strcpy( pSettings->logfile, argv[i] );
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		else if( !strcmp(argv[i], "-llf") ) {
-			if( i+1 < argc && ++i ) {
-				/* set file log level */
-				int level = atoi( argv[i] );
-				if( level >= 0 && level <= log_VERBOSE )
-    				pSettings->loglevel_file = level;
-    			else {
-    				fprintf(stderr, "%s option has invalid value %d\n\n", argv[i-1], level);   
-				    err = CMDLINE_FORMAT_ERROR;
-				}
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		else if( !strcmp(argv[i], "-llc") ) {
-			if( i+1 < argc && ++i ) {
-				/* set console log level */
-				int level = atoi( argv[i] );
-				if( level >= 0 && level <= log_VERBOSE )
-    				pSettings->loglevel_console = level;
-    			else {
-    				fprintf(stderr, "%s option has invalid value %d\n\n", argv[i-1], level);   
-				    err = CMDLINE_FORMAT_ERROR;
-				}
-			}
-			else {
-				fprintf(stderr, "%s option needs argument\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-		}
-		#ifdef _WIN32
-		else if(!strcmp(argv[i], "-service")) {
-			/* skip -service option */
-		}
-		#endif
-		else {
-			if( strcmp(argv[i], "-h") && strcmp(argv[i], "-H") && strcmp(argv[i], "-?") ) {
-				/* unknown arguments */
-				fprintf(stderr, "unknown command line option '%s'\n\n", argv[i]);
-				err = CMDLINE_FORMAT_ERROR;
-			}
-			else return CMDLINE_HELP_REQUESTED;
-		}
-	}
+    }
 	return err;
-}
+}    
