@@ -36,7 +36,7 @@
 #include "webthread.h"
 
 #define SERVER_PORT_MIN 1
-#define SERVER_PORT_MAX 60000
+#define SERVER_PORT_MAX 65535
 
 /** Helper function to retrieve IPv4/IPv6 addresses 
  * for opening sockets */
