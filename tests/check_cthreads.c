@@ -119,14 +119,16 @@ CTHREAD_RET mutex_threads_function1(CTHREAD_ARG data)
     test_mutex_thread_data *mydata = (test_mutex_thread_data*) data;
     int read_value;
     
+    /* Mutex should still be locked from test function */
     ck_assert(cthread_mutex_trylock( mydata->mutex ) == 0);
-    ck_assert(cthread_mutex_lock( mydata->mutex ) == 0);
+    
+    ck_assert(cthread_mutex_lock( mydata->mutex ) != 0);
 
     read_value = *mydata->protected_data;
     *mydata->protected_data = mydata->id;
     ck_assert(read_value==INITIAL_PROTECTED_DATA_VALUE);
     
-    ck_assert(cthread_mutex_unlock( mydata->mutex ) == 0);
+    ck_assert(cthread_mutex_unlock( mydata->mutex ) != 0);
     return (CTHREAD_RET) (long) read_value;
 }
 
@@ -150,6 +152,7 @@ START_TEST (cthread_mutex_threads)
         ck_assert(cthread_create(&thread1, mutex_threads_function1, &td1));
         /* check values and unlock mutex */
         ck_assert(protected_data==INITIAL_PROTECTED_DATA_VALUE);
+        ck_assert(cthread_sleep( 150 ) != 0);
         ck_assert(cthread_mutex_unlock( &mutex ));
         /* Join thread - thread should get mutex lock, read, write and unlock mutex again */
         ck_assert(cthread_join_return_value( &thread1, &thread1_return ));
