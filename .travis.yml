@@ -1,11 +1,17 @@
 language: c
 
+sudo: false
+
 compiler:
   - gcc
   - clang
 
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y check
+addons:
+  apt:
+    sources:
+    - kalakris-cmake
+    packages:
+    - cmake
+    - check
 
 script: mkdir build && cd build && cmake .. -DBUILD_TESTS=1 -DBUILD_EXAMPLES=1 && make && make test
