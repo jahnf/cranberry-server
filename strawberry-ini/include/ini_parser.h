@@ -6,8 +6,8 @@ The strawberry-ini parser is a modified and extended version of inih.
  (http://code.google.com/p/inih/source/browse/trunk/LICENSE.txt)
  for details see the inih project home page: http://code.google.com/p/inih/
 
-The strawberry-ini parser is distributed under the BSD 2-Clause License:
-
+The strawberry-ini parser is distributed under the MIT License:
+ 
 The MIT License (MIT)
 
 Copyright (c) 2013 Jahn Fuchs
