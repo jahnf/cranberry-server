@@ -188,6 +188,7 @@ static int _parse_url( char *str, size_t slen, http_req_info_t *reqinfo, const i
     kv_item * lcurr = NULL;
     kv_item * ltemp = NULL;
 
+    /* if no file requested or first character is a question mark use default file */
     if( str[0] == 0 || str[0] == ASCII_QMARK ) {
         if( (reqinfo->filename = (char*)malloc( sizeof(DEFAULT_URL_FILE) )) == NULL) {
             return RRT_ALLOCATION_ERROR;

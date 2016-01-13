@@ -116,7 +116,6 @@ int cthread_detach(c_thread * thread_handle)
     #endif
 }
 
-
 /* returns 0 on error */
 int cthread_create( c_thread *thread_handle, CTHREAD_FUN function, CTHREAD_ARG parameter )
 {
@@ -160,7 +159,6 @@ int cthread_join_return_value( c_thread *thread, CTHREAD_RET *thread_return )
         return  pthread_join(*thread, thread_return) == 0;
     #endif
 }
-
 
 /* returns 0 on error */
 int cthread_mutex_init( c_mutex *mutex )

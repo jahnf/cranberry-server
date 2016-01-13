@@ -72,7 +72,7 @@ typedef struct {
     c_mutex mutex_threadcount;
     unsigned long ulThreadCount;
     c_mutex mutex_threadlist;
-    reg_thread_t *threads; // list of running threads
+    reg_thread_t *threads; /* list of running server threads */
 } thread_register_t;
 
 /* Server threads register initialization */
@@ -201,7 +201,7 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
     /* register thread at the thread register */
     register_thread( args );
 
-    /* read the http_request, here we can use the send buffer for receiving */
+    /* read the http_request, here we can use the send buffer also for receiving */
     req_info = http_request_read( args, REQ_FILL_ALL, &ret_val, send_buffer, sizeof(send_buffer) );
 
     if( ret_val != RRT_OKAY ) {
@@ -260,10 +260,10 @@ CTHREAD_RET webthread(CTHREAD_ARG data)
         /* only GET and POST are currently supported*/
         break;
     default: {
-        kv_item *header = kvlist_new_item( HTTP_HEADER_CONTENT_LENGTH, "0" );
+        const char *req_method_str = http_request_type_to_str(req_info->req_method);
         send_buffer_http_header( args->sendbuf, HTTP_STATUS_METHOD_NOT_ALLOWED, NULL, req_info->http_version );
-        LOG_FILE( log_ERROR, "Request type not supported (%d).", req_info->req_method );
-        kvlist_free( header );
+        LOG_FILE( log_ERROR, "Request type '%s' not supported (%d).", 
+                             req_method_str ? req_method_str : "UNKNOWN", req_info->req_method );
         goto clean_up_thread;
         break;
         }

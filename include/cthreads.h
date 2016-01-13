@@ -64,7 +64,12 @@ int cthread_equal( c_thread thread1, c_thread thread2 );
  * to terminate.  If that thread has already terminated, then the function
  * returns immediately.  The thread specified by thread must be joinable. */
 int cthread_join( c_thread *thread );
-int cthread_join_return_value( c_thread *thread, CTHREAD_RETURN *thread_return );
+
+/** The function waits for the thread specified by thread
+ * to terminate.  If that thread has already terminated, then the function
+ * returns immediately.  The thread specified by thread must be joinable.
+ * The threads return value will be returned in thread_return. */
+ int cthread_join_return_value( c_thread *thread, CTHREAD_RETURN *thread_return );
 
 /** Sleep for the given milliseconds. Returns 0 on failure. */
 int cthread_sleep(unsigned int milliseconds);
@@ -78,10 +83,21 @@ int cthread_sleep(unsigned int milliseconds);
  * unspecified behavior.*/
 int cthread_detach(c_thread * thread_handle);
 
+/** Initialize a mutex */
 int cthread_mutex_init( c_mutex *mutex );
+
+/** Destroy a mutex */
 int cthread_mutex_destroy( c_mutex *mutex );
+
+/** Obtain a mutex lock. */
 int cthread_mutex_lock( c_mutex *mutex );
+
+/** The cthread_mutex_trylock() function shall be equivalent to cthread_mutex_lock(), 
+ * except that if the mutex object referenced by mutex is currently locked (by any thread, 
+ * including the current thread), the call shall return immediately. */
 int cthread_mutex_trylock( c_mutex *mutex );
+
+/** Unlock a mutex */
 int cthread_mutex_unlock( c_mutex *mutex );
 
 /** Set the default stack size for each thread (only for posix threads).
@@ -91,11 +107,20 @@ size_t cthread_attr_getstacksize();
 /** Get the default stack size (only for posix threads). */
 int cthread_attr_setstacksize(size_t stacksize);
 
-/* Semaphore functions. */
+/** Initialize a semaphore. */
 int cthread_sem_init( c_semaphore *sem, unsigned int init_val );
+
+/** Destroy a semaphore. */
 int cthread_sem_destroy( c_semaphore *sem );
+
+/** Acquire a semaphore (decrement the semaphore). */
 int cthread_sem_wait( c_semaphore *sem );
+
+/** Identical to cthread_sem_wait() but will return immediately and not block if the semaphore
+ * cannot be decremented.*/
 int cthread_sem_trywait( c_semaphore *sem );
+
+/** Unblock (increments) a semaphore. */
 int cthread_sem_post( c_semaphore *sem );
 
 /** Initialize a rwlock with a given maximum of simultaneous readers */ 
@@ -125,13 +150,17 @@ int cthread_rwlock_read_trywait( c_rwlock *rwlock );
  * woken up and proceed to lock the semaphore.  */
 int cthread_rwlock_read_post( c_rwlock *rwlock );
 
-/** cthread_rwlock_write_wait() will try to aquire the writer semaphore. 
+/** cthread_rwlock_write_wait() will try to acquire the writer semaphore. 
  * If the writer semaphore currently has the value zero, then the call
  * blocks until it becomes perform the decrement. After obtaining the lock
  * the function waits for all readers on the rwlock to finish before returning. */
 int cthread_rwlock_write_wait( c_rwlock *rwlock );
 
+/** The cthread_rwlock_write_trywait() will try to acquire the writer semaphore of the rwlock
+ * and return immediately if not possible at the moment. */
 int cthread_rwlock_write_trywait( c_rwlock *rwlock );
+
+/** Increments (unlocks) the writer semaphore in rwlock. */
 int cthread_rwlock_write_post( c_rwlock *rwlock );
     
 #endif /* CTHREADS_H_ */

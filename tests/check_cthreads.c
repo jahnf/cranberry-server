@@ -3,9 +3,14 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #ifndef _WINDOWS
     #include <unistd.h>
+#endif
+
+#ifndef _WIN32
+    #include <sys/time.h>
 #endif
 
 /* include header for 'check' unit testing */
@@ -168,6 +173,44 @@ START_TEST (cthread_mutex_threads)
 }
 END_TEST
 
+START_TEST(cthread_sleep_test)
+{
+    const unsigned long ms_sleep = 55;
+    const unsigned long ms_sleep2 = 99;
+    struct timeval before1, before2;
+    struct timeval after1, after2;
+    
+    ck_assert( gettimeofday(&before1, NULL) == 0 );
+    ck_assert( cthread_sleep(ms_sleep) );
+    ck_assert( gettimeofday(&after1, NULL) == 0 );
+
+    ck_assert( gettimeofday(&before2, NULL) == 0 );
+    ck_assert( cthread_sleep(ms_sleep2) );
+    ck_assert( gettimeofday(&after2, NULL) == 0 );
+
+    ck_assert( before1.tv_sec <= after1.tv_sec );
+    ck_assert( before2.tv_sec <= after2.tv_sec );
+    
+    if( before1.tv_sec == after1.tv_sec ) {
+        ck_assert( before1.tv_usec <= after1.tv_usec );
+        ck_assert( (after1.tv_usec-before1.tv_usec)/1000 >= ms_sleep - 1 );
+    } else if ( before1.tv_sec < after1.tv_sec ) {
+        const unsigned long sleep_time = (after1.tv_sec-before1.tv_sec) * 1000 
+                                          - before1.tv_usec/1000 + after1.tv_usec/1000 ;
+        ck_assert( sleep_time >= ms_sleep - 1 );
+    }
+
+    if( before2.tv_sec == after2.tv_sec ) {
+        ck_assert( before2.tv_usec <= after2.tv_usec );
+        ck_assert( (after2.tv_usec-before2.tv_usec)/1000 >= ms_sleep - 1 );
+    } else if ( before2.tv_sec < after2.tv_sec ) {
+        const unsigned long sleep_time = (after2.tv_sec-before2.tv_sec) * 1000 
+                                          - before2.tv_usec/1000 + after2.tv_usec/1000 ;
+        ck_assert( sleep_time >= ms_sleep - 1 );
+    }
+}
+END_TEST
+
 /*  function that returns the test suite */
 Suite *cthread_test_suite( void )
 {
@@ -180,6 +223,7 @@ Suite *cthread_test_suite( void )
     tcase_add_test (tc_core, cthread_mutex_threads);
     tcase_add_test (tc_core, cthread_rwlock_basic);
     tcase_add_test (tc_core, cthread_semaphore_basic);
+    tcase_add_test (tc_core, cthread_sleep_test);
     suite_add_tcase (s, tc_core);
 
     return s;

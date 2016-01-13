@@ -197,7 +197,7 @@ START_TEST (kv_iter_str_key_only3)
 END_TEST
 
 
-/*  function that returns the key value iterator test suite */
+/* Function that returns the key value iterator test suite */
 Suite *kv_iter_suite( void )
 {
     Suite *s = suite_create ("KeyValue Iterator");
@@ -217,7 +217,7 @@ Suite *kv_iter_suite( void )
     return s;
 }
 
-/*  MAIN */
+/* main - test-runner */
 int main (void)
 {
     int number_failed;
