@@ -5,13 +5,13 @@
 cmake_minimum_required (VERSION 2.6.0)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
-project(cranberry-server C) 
+project(cranberry-server C)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 set(LUA_SUPPORT 1 CACHE BOOL "Build the web server with built in lua support.")
 set(SQLITE_SUPPORT 1 CACHE BOOL "Build the web server with built in sqlite support.")
 set(DEFLATE_SUPPORT 1 CACHE BOOL "Build the web server with built in deflate support.")
-set(LOGGING 1 CACHE BOOL "Build in logging.")
+set(LOGGING 1 CACHE BOOL "Build with logging.")
 
 # Set default build type
 if( NOT CMAKE_BUILD_TYPE )
@@ -30,7 +30,7 @@ if(SQLITE_SUPPORT)
     add_subdirectory(sqlite)
 endif(SQLITE_SUPPORT)
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in" 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/config.h")
 
 # Include directories
@@ -48,7 +48,7 @@ add_subdirectory(strawberry-ini)
 add_subdirectory(src)
 
 # add custom targets and commands for version generation
-add_custom_target(versionheader DEPENDS version_header ) 
+add_custom_target(versionheader DEPENDS version_header )
 add_custom_command(OUTPUT version_header ${CMAKE_CURRENT_BINARY_DIR}/include/version_string.h
     COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
                          -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
@@ -66,7 +66,7 @@ if(DOXYGEN_FOUND)
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
-endif(DOXYGEN_FOUND)  
+endif(DOXYGEN_FOUND)
 
 if(BUILD_TESTS)
     enable_testing()

@@ -7,6 +7,13 @@
 #ifndef STR_UTILS_H_
 #define STR_UTILS_H_
 
+#ifndef __cplusplus
+#ifdef _MSC_VER
+/* inline keyword is not available in Microsoft C Compiler */
+#define inline __inline
+#endif
+#endif
+
 /** @defgroup str_utils String Utils
  * Different C-string utilities.
  * @{

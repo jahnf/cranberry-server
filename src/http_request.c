@@ -1,8 +1,8 @@
-/* cranberry-server. A small C web server application with lua scripting, 
+/* cranberry-server. A small C web server application with lua scripting,
  * session and sqlite support. https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
- */ 
+ */
 
 /** @file http_request.c */
 
@@ -21,7 +21,6 @@
 /*int _recv_data_timed_rrt( const int fd, char *buf, const int buflen, const unsigned int timeout_sec ); */
 
 #ifdef _WIN32
-    #include <winsock.h>
     #define strtoull _strtoui64
     #define strcasecmp _stricmp
     #define strncasecmp _strnicmp
@@ -271,14 +270,14 @@ int _recv_data_timed( const int fd, char *buf, const int buflen, const unsigned 
 
     tv.tv_sec = timeout_sec;
     tv.tv_usec = 0;
-    
+
     FD_ZERO( &addr_set );
     FD_SET( fd, &addr_set );
 
     ret = select( fd+1, &addr_set, NULL, NULL, &tv );
 
     if( ret == -1 ) {
-        return RECV_SELECT_ERROR; 
+        return RECV_SELECT_ERROR;
     }
     else if( ret ) {
         /* FD_ISSET( fd, &addr_set ) should be true */
@@ -341,7 +340,12 @@ inline static int _parse_cookie_info( kv_item** root, const char* cstr, size_t s
 http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *err, char* getbuf, size_t buflen )
 {
     char *pbuf = NULL, *buf = NULL, *tmp = NULL;
-    ssize_t received; unsigned int i; int j;
+	#ifdef _WIN32
+		SSIZE_T received; 
+	#else
+		ssize_t received;
+	#endif
+	unsigned int i; int j;
     http_req_info_t *reqinfo;
     kv_item * lcurr = NULL;
     kv_item * ltemp = NULL;
@@ -433,7 +437,7 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
     /* parse and decode requested url, tokenize get parameters */
     if( (j = _parse_url( pbuf, i, reqinfo, flags )) < 0 ) {
         if( err ) *err = j;
-        goto request_read_end; 
+        goto request_read_end;
     }
 
     /* check if protocol version was sent, default is set to HTTP/1.0 */
@@ -487,7 +491,7 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
 
         if(pch) {
             char *pdblp;
-            
+
             pch[0] = 0;
             pdblp = strchr(pbuf, ASCII_COLON);
 
@@ -549,22 +553,22 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
             memmove( &(reqinfo->post_info->buf[0]), pbuf, reqinfo->post_info->bufbytes + 1 );
         }
         else {
-            reqinfo->post_info->buflen = 
+            reqinfo->post_info->buflen =
                 (reqinfo->post_info->bufbytes + 1 > MIN_POST_FORM_BUF_SIZE)
                     ?reqinfo->post_info->bufbytes + 1:MIN_POST_FORM_BUF_SIZE;
-                    
+
             if( !( reqinfo->post_info->buf = (char*)malloc( reqinfo->post_info->buflen ) ) ) {
                 if( err ) *err = RRT_ALLOCATION_ERROR;
                 goto request_read_end;
             }
-            
+
             memcpy( &(reqinfo->post_info->buf[0]), pbuf, reqinfo->post_info->bufbytes + 1 );
         }
 
         if( transfer_encoding ) {
             if( strcmp(transfer_encoding, "chunked") != 0 ) {
                 /* transfer encoding not supported */
-                /* only chunked is supported, also no mixed 
+                /* only chunked is supported, also no mixed
                  * transfer encodings.. e.g. gzip, chunked */
                 if( err ) *err = RRT_TE_NOT_SUPPORTED;
                 goto request_read_end;
@@ -580,7 +584,7 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
                 reqinfo->post_info->content_length = (size_t) strtoull( content_length, NULL, 10 );
             }
             else {
-                /* missing content-length, this server needs this header for 
+                /* missing content-length, this server needs this header for
                  * post requests, if transfer encoding is not chunked */
                 if( err ) *err = RRT_MISSING_CONTENT_LENGTH;
                 goto request_read_end;
@@ -633,7 +637,7 @@ http_req_info_t* http_request_read( thread_arg_t *args, const int flags, int *er
             /* TODO: handle multipart form data post requests here?
              * we need to check for a valid session before allowing file upload
              * we need to fill out other post variables as usual */
-            
+
         }
 
     } /* end if request type is POST */

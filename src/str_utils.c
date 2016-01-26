@@ -221,7 +221,7 @@ void str_tolower( char *s )
 char *strtrim_right( char *p )
 {
     unsigned char *end;
-    int len;
+    size_t len;
 
     if( p && *p ) {
         len = strlen(p);

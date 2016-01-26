@@ -4,8 +4,32 @@
 #include <stdio.h>
 #include "optparse.h"
 
-#define opterror(options, format, args...) \
-    snprintf(options->errmsg, sizeof(options->errmsg), format, args);
+#ifndef __cplusplus
+	#ifdef _MSC_VER
+		/* inline keyword is not available in Microsoft C Compiler */
+		#define inline __inline
+	#endif
+#endif
+
+#define MSG_INVALID "invalid option"
+#define MSG_MISSING "option requires an argument"
+#define MSG_TOOMANY "option takes no arguments"
+
+static int
+opterror(struct optparse *options, const char *message, const char *data)
+{
+	unsigned p = 0;
+	const char *sep = " -- '";
+	while (*message)
+		options->errmsg[p++] = *message++;
+	while (*sep)
+		options->errmsg[p++] = *sep++;
+	while (p < sizeof(options->errmsg) - 2 && *data)
+		options->errmsg[p++] = *data++;
+	options->errmsg[p++] = '\'';
+	options->errmsg[p++] = '\0';
+	return '?';
+}
 
 void optparse_init(struct optparse *options, char **argv)
 {
@@ -61,68 +85,75 @@ argtype(const char *optstring, char c)
 
 int optparse(struct optparse *options, const char *optstring)
 {
-    options->errmsg[0] = '\0';
-    options->optopt = 0;
-    options->optarg = NULL;
-    char *option = options->argv[options->optind];
-    if (option == NULL) {
-        return -1;
-    } else if (is_dashdash(option)) {
-        options->optind++; // consume "--"
-        return -1;
-    } else if (!is_shortopt(option)) {
-        if (options->permute) {
-            int index = options->optind;
-            options->optind++;
-            int r = optparse(options, optstring);
-            permute(options, index);
-            options->optind--;
-            return r;
-        } else {
-            return -1;
-        }
-    }
-    option += options->subopt + 1;
-    options->optopt = option[0];
-    int type = argtype(optstring, option[0]);
-    char *next = options->argv[options->optind + 1];
-    switch (type) {
-    case -1:
-        opterror(options, "invalid option -- '%c'", option[0]);
-        options->optind++;
-        return '?';
-    case OPTPARSE_NONE:
-        if (option[1]) {
-            options->subopt++;
-        } else {
-            options->subopt = 0;
-            options->optind++;
-        }
-        return option[0];
-    case OPTPARSE_REQUIRED:
-        options->subopt = 0;
-        options->optind++;
-        if (option[1]) {
-            options->optarg = option + 1;
-        } else if (next != NULL) {
-            options->optarg = next;
-            options->optind++;
-        } else {
-            opterror(options, "option requires an argument -- '%c'", option[0]);
-            options->optarg = NULL;
-            return '?';
-        }
-        return option[0];
-    case OPTPARSE_OPTIONAL:
-        options->subopt = 0;
-        options->optind++;
-        if (option[1])
-            options->optarg = option + 1;
-        else
-            options->optarg = NULL;
-        return option[0];
-    }
-    return 0;
+	char *option = options->argv[options->optind];
+	options->errmsg[0] = '\0';
+	options->optopt = 0;
+	options->optarg = 0;
+	if (option == 0) {
+		return -1;
+	}
+	else if (is_dashdash(option)) {
+		options->optind++; /* consume "--" */
+		return -1;
+	}
+	else if (!is_shortopt(option)) {
+		if (options->permute) {
+			int index = options->optind;
+			options->optind++;
+			int r = optparse(options, optstring);
+			permute(options, index);
+			options->optind--;
+			return r;
+		}
+		else {
+			return -1;
+		}
+	}
+	option += options->subopt + 1;
+	options->optopt = option[0];
+	int type = argtype(optstring, option[0]);
+	char *next = options->argv[options->optind + 1];
+	switch (type) {
+	case -1: {
+		options->optind++;
+		char str[2] = { option[0] };
+		return opterror(options, MSG_INVALID, str);
+	}
+	case OPTPARSE_NONE:
+		if (option[1]) {
+			options->subopt++;
+		}
+		else {
+			options->subopt = 0;
+			options->optind++;
+		}
+		return option[0];
+	case OPTPARSE_REQUIRED:
+		options->subopt = 0;
+		options->optind++;
+		if (option[1]) {
+			options->optarg = option + 1;
+		}
+		else if (next != 0) {
+			options->optarg = next;
+			options->optind++;
+		}
+		else {
+			options->optarg = 0;
+			char str[2] = { option[0] };
+			return opterror(options, MSG_MISSING, str);
+		}
+		return option[0];
+	case OPTPARSE_OPTIONAL:
+		options->subopt = 0;
+		options->optind++;
+		if (option[1])
+			options->optarg = option + 1;
+		else
+			options->optarg = 0;
+		return option[0];
+	}
+	return 0;
 }
 
 char *optparse_arg(struct optparse *options)
@@ -138,15 +169,6 @@ static inline int
 longopts_end(const struct optparse_long *longopts, int i)
 {
     return !longopts[i].longname && !longopts[i].shortname;
-}
-
-static size_t
-optstring_length(const struct optparse_long *longopts)
-{
-    int i = 0, length = 0;
-    for ( ; !longopts_end(longopts, i); ++i, ++length)
-        length += longopts[i].argtype;
-    return length + 1;
 }
 
 static void
@@ -193,7 +215,7 @@ long_fallback(struct optparse *options,
               const struct optparse_long *longopts,
               int *longindex)
 {
-    char optstring[optstring_length(longopts)];
+	char optstring[96 * 3 + 1]; /* 96 ASCII printable characters */
     optstring_from_long(longopts, optstring);
     int i, result = optparse(options, optstring);
     if (longindex != NULL) {

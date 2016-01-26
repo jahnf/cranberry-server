@@ -1,9 +1,9 @@
-/* cranberry-server 
+/* cranberry-server
  * https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
- 
+
 /** @file cthreads.h
  *
  *  CThreads wraps simple threads, mutexes, semaphores and a readers-writer_lock
@@ -13,19 +13,22 @@
 #ifndef CTHREADS_H_
 #define CTHREADS_H_
 
-#if _MSC_VER
-    #include <windows.h>
+#if _WIN32
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <windows.h>
 #else
     #include <pthread.h>
     #include <semaphore.h>
 #endif
 
 /* CThread typedefs and defines. */
-#if _MSC_VER
+#if _WIN32
     typedef CRITICAL_SECTION c_mutex;
     typedef HANDLE c_thread;
     typedef HANDLE c_semaphore;
     #define CTHREAD_RET DWORD WINAPI
+	/* typedef DWORD WINAPI CTHREAD_RET; */
     typedef DWORD CTHREAD_RETURN;
     typedef LPTHREAD_START_ROUTINE CTHREAD_FUN;
     typedef LPVOID CTHREAD_ARG;
@@ -35,6 +38,7 @@
     typedef sem_t c_semaphore;
     typedef void* CTHREAD_ARG;
     typedef void* CTHREAD_RET;
+	typedef void* CTHREAD_RET_ARG;
     typedef void* CTHREAD_RETURN;
     typedef CTHREAD_RET(*CTHREAD_FUN)(CTHREAD_ARG);
 #endif
@@ -48,15 +52,15 @@ typedef struct {
 } c_rwlock;
 
 /** The function starts a new thread in the calling process.
- * The new thread starts execution by invoking function(); 
- * parameter is passed as the sole argument of function(). 
+ * The new thread starts execution by invoking function();
+ * parameter is passed as the sole argument of function().
  * Returns 0 on error. */
 int cthread_create( c_thread *thread_handle, CTHREAD_FUN function, CTHREAD_ARG parameter );
 
 /** Returns the thread handle to the current thread. */
 c_thread cthread_self();
 
-/** Compares to thread handles. Returns non-zero if the threads are equal. 
+/** Compares to thread handles. Returns non-zero if the threads are equal.
  * Zero otherwise. */
 int cthread_equal( c_thread thread1, c_thread thread2 );
 
@@ -92,8 +96,8 @@ int cthread_mutex_destroy( c_mutex *mutex );
 /** Obtain a mutex lock. */
 int cthread_mutex_lock( c_mutex *mutex );
 
-/** The cthread_mutex_trylock() function shall be equivalent to cthread_mutex_lock(), 
- * except that if the mutex object referenced by mutex is currently locked (by any thread, 
+/** The cthread_mutex_trylock() function shall be equivalent to cthread_mutex_lock(),
+ * except that if the mutex object referenced by mutex is currently locked (by any thread,
  * including the current thread), the call shall return immediately. */
 int cthread_mutex_trylock( c_mutex *mutex );
 
@@ -123,10 +127,10 @@ int cthread_sem_trywait( c_semaphore *sem );
 /** Unblock (increments) a semaphore. */
 int cthread_sem_post( c_semaphore *sem );
 
-/** Initialize a rwlock with a given maximum of simultaneous readers */ 
+/** Initialize a rwlock with a given maximum of simultaneous readers */
 int cthread_rwlock_init( c_rwlock *rwlock, unsigned int max_readers );
 
-/** Destroy a previously initialized rwlock. The effect of subsequent use 
+/** Destroy a previously initialized rwlock. The effect of subsequent use
  * on an rwlock or uninitialized rwlock is undefined. */
 int cthread_rwlock_destroy( c_rwlock *rwlock );
 
@@ -135,12 +139,12 @@ int cthread_rwlock_destroy( c_rwlock *rwlock );
  * and the function returns, immediately. If the reader semaphore currently
  * has the value zero, then the call blocks until either it becomes possible to
  * perform the decrement (i.e., the semaphore value rises above zero),
- * or a signal handler interrupts the call. No reader locks can be obtained while 
+ * or a signal handler interrupts the call. No reader locks can be obtained while
  * the writer semaphore is locked. */
 int cthread_rwlock_read_wait( c_rwlock *rwlock );
 
-/** cthread_rwlock_read_trywait() is the same as cthread_rwlock_read_wait(), 
- * except that if the decrement cannot be immediately performed, 
+/** cthread_rwlock_read_trywait() is the same as cthread_rwlock_read_wait(),
+ * except that if the decrement cannot be immediately performed,
  * then the call returns 0. */
 int cthread_rwlock_read_trywait( c_rwlock *rwlock );
 
@@ -150,7 +154,7 @@ int cthread_rwlock_read_trywait( c_rwlock *rwlock );
  * woken up and proceed to lock the semaphore.  */
 int cthread_rwlock_read_post( c_rwlock *rwlock );
 
-/** cthread_rwlock_write_wait() will try to acquire the writer semaphore. 
+/** cthread_rwlock_write_wait() will try to acquire the writer semaphore.
  * If the writer semaphore currently has the value zero, then the call
  * blocks until it becomes perform the decrement. After obtaining the lock
  * the function waits for all readers on the rwlock to finish before returning. */
@@ -162,5 +166,5 @@ int cthread_rwlock_write_trywait( c_rwlock *rwlock );
 
 /** Increments (unlocks) the writer semaphore in rwlock. */
 int cthread_rwlock_write_post( c_rwlock *rwlock );
-    
+
 #endif /* CTHREADS_H_ */

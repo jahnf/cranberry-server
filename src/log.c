@@ -1,12 +1,12 @@
-/* cranberry-server. A small C web server application with lua scripting, 
+/* cranberry-server. A small C web server application with lua scripting,
  * session and sqlite support. https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
- 
+
 /** @addtogroup logging
  * @{
- * @file log.c Source file. 
+ * @file log.c Source file.
  */
 
 #include "log.h"
@@ -26,11 +26,14 @@
       #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
     #endif
 
+    #ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
+    #define _TIMEZONE_DEFINED
     struct timezone
     {
-      int  tz_minuteswest; /* minutes W of Greenwich */
-      int  tz_dsttime;     /* type of dst correction */
+        int  tz_minuteswest; /* minutes W of Greenwich */
+        int  tz_dsttime;     /* type of dst correction */
     };
+    #endif /* _TIMEZONE_DEFINED */
 
     int gettimeofday(struct timeval *tv, struct timezone *tz);
 #else
@@ -145,7 +148,7 @@ static void _log_to_file(log_settings_t *pLogSettings, const char* type, const c
 #endif
 }
 
-static void _log_to_console( log_settings_t *pLogSettings, const int loglevel, 
+static void _log_to_console( log_settings_t *pLogSettings, const int loglevel,
                              const char* type, const char *filename,
                              const unsigned long line, const char* format, va_list args )
 {

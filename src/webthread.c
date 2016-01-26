@@ -12,8 +12,9 @@
 #include <string.h>
 
 #ifdef _WIN32
-    #include <winsock.h>
-    #include <time.h>
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <time.h>
     #define OFFT_FMT "%lu"
     #define OFFT_FMT_CAST
 #else

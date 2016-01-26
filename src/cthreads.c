@@ -1,16 +1,16 @@
-/* cranberry-server 
+/* cranberry-server
  * https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
- 
+
 /** @file cthreads.c
  *  @author Jahn Fuchs
  *
  *  cthreads wraps simple threads, mutexes, semaphores and a readers-writer_lock
  *  that can be used without changes on both posix and ms windows systems.
  */
- 
+
 #include <time.h>
 #include "cthreads.h"
 
@@ -33,7 +33,7 @@ int cthread_sleep(unsigned int milliseconds)
         rqtp.tv_sec = (milliseconds / 1000);
         rqtp.tv_nsec = ((long)(milliseconds % 1000))*1000000L;
 
-        if(nanosleep(&rqtp , &rmtp) < 0 )   
+        if(nanosleep(&rqtp , &rmtp) < 0 )
         {
             /* rmtp should contain the remaining time if nanosleep fails */
             /* Fallback alternative for sleep with pthread timedwait */
@@ -121,7 +121,7 @@ int cthread_create( c_thread *thread_handle, CTHREAD_FUN function, CTHREAD_ARG p
 {
     #ifdef _WIN32
         *thread_handle = CreateThread(  NULL,              /* default security attributes */
-                                        cthread_stacksize, /* use default stack size      */ 
+                                        cthread_stacksize, /* use default stack size      */
                                         function,          /* thread function name        */
                                         parameter,         /* argument to thread function */
                                         0,                 /* use default creation flags  */
@@ -148,11 +148,11 @@ int cthread_join( c_thread *thread )
 }
 
 /* returns 0 on error */
-int cthread_join_return_value( c_thread *thread, CTHREAD_RET *thread_return )
+int cthread_join_return_value( c_thread *thread, CTHREAD_RETURN *thread_return )
 {
     #ifdef _WIN32
-        CTHREAD_RET wait_return =  WaitForSingleObject( *thread,     /* handle to mutex */
-                                                        INFINITE) ); /* wait time */
+        CTHREAD_RETURN wait_return =  WaitForSingleObject( *thread,     /* handle to mutex */
+                                                            INFINITE ); /* wait time */
         if( wait_return == WAIT_FAILED ) return 0;
         return GetExitCodeThread( *thread, thread_return);
     #else
@@ -236,7 +236,7 @@ int cthread_sem_destroy( c_semaphore *sem )
     #endif
 }
 
-int cthread_sem_wait( c_semaphore *sem ) 
+int cthread_sem_wait( c_semaphore *sem )
 {
     #ifdef _WIN32
         return( WAIT_FAILED != WaitForSingleObject( *sem,        /* handle to mutex */
@@ -246,7 +246,7 @@ int cthread_sem_wait( c_semaphore *sem )
     #endif
 }
 
-int cthread_sem_trywait( c_semaphore *sem ) 
+int cthread_sem_trywait( c_semaphore *sem )
 {
     #ifdef _WIN32
         return( WAIT_OBJECT_0 == WaitForSingleObject( *sem,  /* handle to mutex */
@@ -256,7 +256,7 @@ int cthread_sem_trywait( c_semaphore *sem )
     #endif
 }
 
-int cthread_sem_post( c_semaphore *sem ) 
+int cthread_sem_post( c_semaphore *sem )
 {
     #ifdef _WIN32
         return ReleaseSemaphore( *sem,  /* handle to semaphore */
@@ -267,7 +267,7 @@ int cthread_sem_post( c_semaphore *sem )
     #endif
 }
 
-int cthread_rwlock_init( c_rwlock *rwlock, unsigned int max_readers ) 
+int cthread_rwlock_init( c_rwlock *rwlock, unsigned int max_readers )
 {
     rwlock->max_readers = max_readers;
     if( !cthread_sem_init( &rwlock->write, 1 ) ) return 0;
@@ -275,14 +275,14 @@ int cthread_rwlock_init( c_rwlock *rwlock, unsigned int max_readers )
     return 1;
 }
 
-int cthread_rwlock_destroy( c_rwlock *rwlock ) 
+int cthread_rwlock_destroy( c_rwlock *rwlock )
 {
     if( !cthread_sem_destroy( &rwlock->write ) ) return 0;
     if( !cthread_sem_destroy( &rwlock->readers ) )  return 0;
     return 1;
 }
 
-int cthread_rwlock_read_wait( c_rwlock *rwlock ) 
+int cthread_rwlock_read_wait( c_rwlock *rwlock )
 {
     if( !cthread_sem_wait( &rwlock->write ) ) return 0;
     if( !cthread_sem_wait( &rwlock->readers ) ) return 0;
@@ -290,37 +290,37 @@ int cthread_rwlock_read_wait( c_rwlock *rwlock )
     return 1;
 }
 
-int cthread_rwlock_read_trywait( c_rwlock *rwlock ) 
+int cthread_rwlock_read_trywait( c_rwlock *rwlock )
 {
     if( !cthread_sem_trywait( &rwlock->write ) ) return 0;
     if( !cthread_sem_trywait( &rwlock->readers ) ) {
         cthread_sem_post( &rwlock->write );
-        return 0;       
-    } 
+        return 0;
+    }
     cthread_sem_post( &rwlock->write );
     return 1;
 }
 
-int cthread_rwlock_read_post( c_rwlock *rwlock ) 
+int cthread_rwlock_read_post( c_rwlock *rwlock )
 {
     return cthread_sem_post( &rwlock->readers );
 }
 
-int cthread_rwlock_write_wait( c_rwlock *rwlock ) 
+int cthread_rwlock_write_wait( c_rwlock *rwlock )
 {
-    unsigned int i; 
+    unsigned int i;
     if( !cthread_sem_wait( &rwlock->write ) ) return 0;
     /* block all readers */
-    for( i = 0; i < rwlock->max_readers; ++i )      
+    for( i = 0; i < rwlock->max_readers; ++i )
         cthread_sem_wait( &rwlock->readers );
     return 1;
 }
 
-int cthread_rwlock_write_trywait( c_rwlock *rwlock ) 
+int cthread_rwlock_write_trywait( c_rwlock *rwlock )
 {
-    unsigned int i; 
+    unsigned int i;
     if( !cthread_sem_trywait( &rwlock->write ) ) return 0;
-    for( i = 0; i < rwlock->max_readers; ++i ) {      
+    for( i = 0; i < rwlock->max_readers; ++i ) {
         if( !cthread_sem_trywait( &rwlock->readers ) ) break;
     }
     if( i != rwlock->max_readers ) {
@@ -333,11 +333,11 @@ int cthread_rwlock_write_trywait( c_rwlock *rwlock )
     return 1;
 }
 
-int cthread_rwlock_write_post( c_rwlock *rwlock ) 
+int cthread_rwlock_write_post( c_rwlock *rwlock )
 {
-    unsigned int i; 
+    unsigned int i;
     if( !cthread_sem_post( &rwlock->write ) ) return 0;
-    for( i = 0; i < rwlock->max_readers; ++i )      
+    for( i = 0; i < rwlock->max_readers; ++i )
         cthread_sem_post( &rwlock->readers );
     return 1;
 }

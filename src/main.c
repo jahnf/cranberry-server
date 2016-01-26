@@ -1,15 +1,17 @@
-/* cranberry-server. A small C web server application with lua scripting, 
+/* cranberry-server. A small C web server application with lua scripting,
  * session and sqlite support. https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
- 
+
 /* first some windows specific includes and defines */
 #ifdef _WIN32
-    #include <windows.h>
+	#include <winsock2.h>
+	#include <ws2tcpip.h>
+	#include <windows.h>
 
     #define chdir(s) _chdir(s)
-    #define APP_BASENAME "strawberry-server"
+    #define APP_BASENAME "cranberry-server"
 
     #define MAIN_RETURN_TYPE VOID WINAPI
     #define ARGC_TYPE DWORD
@@ -79,7 +81,7 @@ void exit_signal_handler( int sig )
 }
 
 /* Web server main */
-MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv) 
+MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
 {
     int IPv4 = 0;
     int IPv6 = 0;
@@ -98,7 +100,7 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
     static struct sockaddr_in6 cli_addr6 =  {0};
     static struct sockaddr_in serv_addr4 =  {0};
     static struct sockaddr_in6 serv_addr6 = {0};
-    
+
     socklen_t length;
     c_thread mythread;      /* Posix/Windows thread */
 
@@ -125,9 +127,9 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
             else if( err == CMDLINE_VERSION_REQUESTED )
                 cmdline_print_version( APP_BASENAME );
 
-            if( err == CMDLINE_FORMAT_ERROR ) 
+            if( err == CMDLINE_FORMAT_ERROR )
                 main_exit_code = EXIT_FAILURE;
-                
+
             goto label_nolog_exit;
         }
     }
@@ -164,9 +166,9 @@ MAIN_RETURN_TYPE server_main(ARGC_TYPE argc, ARGV_TYPE argv)
 
     /* register signal handler... */
     #ifdef _WIN32
-        signal(SIGABRT, &sighandler);
-        signal(SIGTERM, &sighandler);
-        signal(SIGINT,  &sighandler);
+        signal(SIGABRT, &exit_signal_handler);
+        signal(SIGTERM, &exit_signal_handler);
+        signal(SIGINT,  &exit_signal_handler);
     #else
     {
         struct sigaction action;

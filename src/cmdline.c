@@ -69,7 +69,7 @@ static void cmdline_print_option_list(struct optparse_long *longopts)
          !(lo->shortname == 0 && lo->longname == NULL); ++lo ) {
         if( lo->help_text == NULL ) continue;
         if( lo->longname && longname_maxlen < strlen(lo->longname) )
-            longname_maxlen = strlen(lo->longname);
+            longname_maxlen = (int)strlen(lo->longname);
     }
     
     for( lo = longopts; lo != NULL && 
@@ -87,7 +87,7 @@ static void cmdline_print_option_list(struct optparse_long *longopts)
             printf("  ");
 
         if( lo->longname ) {
-            int length_rest = longname_maxlen - strlen(lo->longname) + 2;
+            int length_rest = longname_maxlen - (int)strlen(lo->longname) + 2;
             printf("--%s", lo->longname);
             for( ; length_rest; -- length_rest ) printf(" ");
         } else {
