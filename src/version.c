@@ -1,18 +1,18 @@
-/* cranberry-server. A small C web server application with lua scripting, 
+/* cranberry-server. A small C web server application with lua scripting,
  * session and sqlite support. https://github.com/jahnf/cranberry-server
  * For licensing see LICENSE file or
  * https://github.com/jahnf/cranberry-server/blob/master/LICENSE
  */
- 
+
 /** @file version.c */
 
 #include "version.h"
 
 #ifdef GITVERSION
-    #include "version_string.h"
+    #include "version/version_string.h"
 #endif
 
-#if defined(VERSION_STRING) 
+#if defined(VERSION_STRING)
     static const char version_string[] = VERSION_STRING;
 #else
     static const char version_string[] = "?";

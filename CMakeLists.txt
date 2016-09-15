@@ -47,14 +47,29 @@ mkcres_add_library(server_resourcelib resources/resources.json mkcres)
 add_subdirectory(strawberry-ini)
 add_subdirectory(src)
 
-# add custom targets and commands for version generation
-add_custom_target(versionheader DEPENDS version_header )
-add_custom_command(OUTPUT version_header ${CMAKE_CURRENT_BINARY_DIR}/include/version_string.h
-    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
-                         -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
+# Define input and output of generated version header and version cmake files
+set(VHEADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/version_string.h.in)
+set(VHEADER_DST ${CMAKE_CURRENT_BINARY_DIR}/include/version/version_string.h)
+set(VCMAKE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/version_string.cmake.in)
+set(VCMAKE_DST ${CMAKE_CURRENT_BINARY_DIR}/version_string.cmake)
+
+# Make sure the version generation is run at configuration time...
+include(${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
+# ...so that the version_string.cmake file can be included
+# The generated version_string.cmake sets the generated version for the project
+# and for CPack
+include(${CMAKE_CURRENT_BINARY_DIR}/version_string.cmake)
+
+# Add generation of the version information as custom target
+# This ensures the generation of version informatito at compile time and not
+# only the configuration time.
+add_custom_target(version_header ${CMAKE_COMMAND}
+                  -D VHEADER_SRC=${VHEADER_SRC} -D VHEADER_DST=${VHEADER_DST}
+                  -D VCMAKE_SRC=${VCMAKE_SRC} -D VCMAKE_DST=${VCMAKE_DST}
+                  -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
 
 # create version header before building the server_version library
-add_dependencies(server_version versionheader)
+add_dependencies(server_version version_header)
 
 # Add a target to generate API documentation with Doxygen
 find_package(Doxygen QUIET)
